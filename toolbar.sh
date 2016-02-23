@@ -56,12 +56,6 @@ do
         ;;
     esac
 done
-# # We check if getopts did not find no any param
-# if [ "$flagGetOpts" == 0 ]; then
-#     echo 'This script cannot be launched without options.'
-#     usage
-#     exit 1
-# fi
 
 # Function battery
 function getBattery() {
@@ -154,12 +148,49 @@ function main() {
   # batteryTimeRemaining=
   name=$(getBattery "$")
 
-  # Wi-Fi eSSID
-  # if [ "$( cat /sys/class/net/eth1/rfkill1/state )" -eq "1" ]; then
-  #   DWM_ESSID=$( /sbin/iwgetid -r );
-  # else
-  #   DWM_ESSID="OFF";
-  # fi;
+# getBattteryNumber() {{{1
+# count the number of battery in the system
+function getBatteryNumber() {
+  declare -a aBattery
+  while read -r -d ''; do
+    aBattery+=("${filename}")
+  done < <(find /sys/class/power_supply/ -maxdepth 1 -mindepth 1 -name "BAT*" -type l -print0)
+  local iBatteryNumber=${#aBattery[*]}
+  unset -v aBattery
+  echo "${iBatteryNumber}"
+}
+
+function getBatteryInUse() {
+  local sBatInUse=""
+  local aBattery=()
+  while IFS= read -d $'\0' -r file ; do
+    aBattery=("${aBattery[@]}" "$file")
+  done < <(find /sys/class/power_supply/ -maxdepth 1 -mindepth 1 -name "BAT*" -type l -print0)
+  for sBat in "${aBattery[@]}" ; do
+    sState=$(cat "${sBat}"/status)
+    # let's trim space
+    # sState="${sState##*( )}"
+    # echo "cat "${sBat}"/status"
+    # echo "${sbat} ${sState}"
+    # echo "${sState}"
+    if [[ "${sState}" == "Charging" ]]; then
+      # echo "test true ${sBat}"
+      sBatInUse=$(basename "${sBat}")
+    fi
+  done
+  unset -v aBattery
+  echo "${sBatInUse}"
+}
+
+# generate toolbar {{{1
+function main() {
+  # Temp
+  # CPU
+  # Power/Battery Status
+  batteryStatus="$(getBatteryStatus)"
+  batteryNumber="$(getBatteryNumber)"
+  batteryInUse="$(getBatteryInUse)"
+  batteryWidget="Power($batteryInUse/$batteryNumber): [$batteryStatus]"
 
   # Keyboard layout
   if [ "`xset -q | awk -F \" \" '/Group 2/ {print($4)}'`" = "on" ]; then
