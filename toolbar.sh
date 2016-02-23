@@ -63,12 +63,8 @@ done
 #     exit 1
 # fi
 
-# generate toolbar {{{1
-function main() {
-  # Statusbar loop
-  # Temp
-  # CPU
-  # Power/Battery Status
+# Function battery
+function getBattery() {
   if [ "$( cat /sys/class/power_supply/AC/online )" -eq "1" ]; then
     DWM_BATTERY="AC";
     DWM_RENEW_INT=1;
@@ -91,6 +87,72 @@ function main() {
     DWM_RENEW_INT=10;
     unset -v BAT_ARRAY
   fi;
+}
+
+# getBatteryStatus() {{{1
+function getBatteryStatus() {
+  local batteryStatus=""
+  if [ "$( cat /sys/class/power_supply/AC/online )" -eq "1" ]; then
+    batteryStatus="AC";
+  else
+    batteryStatus="DC";
+  fi
+  echo "${batteryStatus}"
+}
+
+# getBattteryNumber() {{{1
+# count the number of battery in the system
+function getBatteryNumber() {
+  declare -a aBattery
+  while read -r -d ''; do
+    aBattery+=("${filename}")
+  done < <(find /sys/class/power_supply/ -maxdepth 1 -mindepth 1 -name "BAT*" -type l -print0)
+  local iBatteryNumber=${#aBattery[*]}
+  unset -v aBattery
+  echo "${iBatteryNumber}"
+}
+
+function getBatteryInUse() {
+  local sBatInUse=""
+  local aBattery=()
+  while IFS= read -d $'\0' -r file ; do
+    aBattery=("${aBattery[@]}" "$file")
+  done < <(find /sys/class/power_supply/ -maxdepth 1 -mindepth 1 -name "BAT*" -type l -print0)
+  for sBat in "${aBattery[@]}" ; do
+    sState=$(cat "${sBat}"/status)
+    # let's trim space
+    # sState="${sState##*( )}"
+    # echo "cat "${sBat}"/status"
+    # echo "${sbat} ${sState}"
+    # echo "${sState}"
+    if [[ "${sState}" == "Charging" ]]; then
+      # echo "test true ${sBat}"
+      sBatInUse=$(basename "${sBat}")
+    fi
+  done
+  unset -v aBattery
+  echo "${sBatInUse}"
+}
+
+# generate toolbar {{{1
+function main() {
+  # Temp
+  # CPU
+  # Power/Battery Status
+  batteryStatus=$(getBatteryStatus)
+  # if [[ "${batteryStatus}" == "AC" ]]; then
+  #   # AC MODE
+  # else
+  #   # DC MODE
+  # fi
+  batteryNumber=$(getBatteryNumber)
+  batteryInUse=$(getBatteryInUse)
+  # echo $batteryStatus $batteryNumber  $batteryInUse
+  batteryWidget="Power($batteryInUse/$batteryNumber): [$batteryStatus]"
+  # echo $batteryWidget
+  # exit 3
+  # batteryTimeRemaining=
+  name=$(getBattery "$")
 
   # Wi-Fi eSSID
   # if [ "$( cat /sys/class/net/eth1/rfkill1/state )" -eq "1" ]; then
@@ -113,7 +175,7 @@ function main() {
   DWM_CLOCK=$( date '+%e %b %Y %a | %k:%M' );
 
   # Overall output command
-  DWM_STATUS="WiFi: [$DWM_ESSID] | Lang: [$DWM_LAYOUT] | Power(/$DWM_BATTERY_NUMBER): [$DWM_BATTERY] | Vol: $DWM_VOL | $DWM_CLOCK";
+  DWM_STATUS="WiFi: [$DWM_ESSID] | Lang: [$DWM_LAYOUT] | $batteryWidget | Vol: $DWM_VOL | $DWM_CLOCK";
   # xsetroot -name "$DWM_STATUS";
   # sleep $DWM_RENEW_INT;
   # done &
