@@ -8,9 +8,66 @@
 # Licence:  GPLv3
 # ---------------------------------------------
 
-# Statusbar loop
-while true; do
+# TaskList {{{1
+#@TODO: Add check on required program.
+
+# Error Codes {{{1
+# 0 - Ok
+# 1 - Error in cmd / options
+
+# Default variables {{{1
+# Flags :
+flagGetOpts=0
+
+# FUNCTION usage() {{{1
+# Return the helping message for the use.
+function usage()
+{
+cat << DOC
+
+usage: "$0" options
+
+This script generate a text toolbar
+
+
+OPTIONS:
+    -h  Show this message.
+
+Sample:
+  sh toolbar.sh
+
+DOC
+}
+
+# GETOPTS {{{1
+# Get the param of the script.
+while getopts ":h" OPTION
+do
+    flagGetOpts=1
+    case $OPTION in
+    h)
+        usage
+        exit 1
+        ;;
+    ?)
+        echo "commande $1 inconnue"
+        usage
+        exit
+        ;;
+    esac
+done
+# # We check if getopts did not find no any param
+# if [ "$flagGetOpts" == 0 ]; then
+#     echo 'This script cannot be launched without options.'
+#     usage
+#     exit 1
+# fi
+
+# generate toolbar {{{1
+function main() {
+  # Statusbar loop
   # Temp
+  # CPU
   # Power/Battery Status
   if [ "$( cat /sys/class/power_supply/AC/online )" -eq "1" ]; then
     DWM_BATTERY="AC";
@@ -36,11 +93,11 @@ while true; do
   fi;
 
   # Wi-Fi eSSID
-  if [ "$( cat /sys/class/net/eth1/rfkill1/state )" -eq "1" ]; then
-    DWM_ESSID=$( /sbin/iwgetid -r );
-  else
-    DWM_ESSID="OFF";
-  fi;
+  # if [ "$( cat /sys/class/net/eth1/rfkill1/state )" -eq "1" ]; then
+  #   DWM_ESSID=$( /sbin/iwgetid -r );
+  # else
+  #   DWM_ESSID="OFF";
+  # fi;
 
   # Keyboard layout
   if [ "`xset -q | awk -F \" \" '/Group 2/ {print($4)}'`" = "on" ]; then
@@ -57,6 +114,11 @@ while true; do
 
   # Overall output command
   DWM_STATUS="WiFi: [$DWM_ESSID] | Lang: [$DWM_LAYOUT] | Power(/$DWM_BATTERY_NUMBER): [$DWM_BATTERY] | Vol: $DWM_VOL | $DWM_CLOCK";
-  xsetroot -name "$DWM_STATUS";
-  sleep $DWM_RENEW_INT;
-done &
+  # xsetroot -name "$DWM_STATUS";
+  # sleep $DWM_RENEW_INT;
+  # done &
+  echo $DWM_STATUS
+}
+main
+# }}}
+# vim: set ft=sh ts=2 sw=2 tw=80 foldmethod=marker et :
