@@ -97,6 +97,20 @@ function getBatteryInUse() {
   echo "${sBatInUse}"
 }
 
+# getBatteryTime() {{{1
+# Return time remaining (in hour) for a given battery
+function getBatteryTime() {
+  local iTime=0
+  # we need the battery name
+  if [[ -n "$1" && "$1" != "false" ]]; then
+    local iBatFull=$(cat /sys/class/power_supply/"$1"/energy_full)
+    local iBatChargeNow=$(cat /sys/class/power_supply/"$1"/energy_now)
+    iTime=$((iBatFull - iBatChargeNow))
+    iTime=$((iTime / iBatChargeNow))
+  fi
+  echo "${iTime}"
+}
+
 # generate toolbar {{{1
 function main() {
   # Temp
@@ -105,7 +119,8 @@ function main() {
   batteryStatus="$(getBatteryStatus)"
   batteryNumber="$(getBatteryNumber)"
   batteryInUse="$(getBatteryInUse)"
-  batteryWidget="Power($batteryInUse/$batteryNumber): [$batteryStatus]"
+  batteryTime="$(getBatteryTime $batteryInUse)"
+  batteryWidget="Power($batteryInUse/$batteryNumber): [$batteryStatus-$batteryTime"h"]"
 
   # Keyboard layout
   if [ "`xset -q | awk -F \" \" '/Group 2/ {print($4)}'`" = "on" ]; then
