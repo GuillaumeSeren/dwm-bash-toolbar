@@ -43,7 +43,6 @@ DOC
 # Get the param of the script.
 while getopts ":h" OPTION
 do
-    flagGetOpts=1
     case $OPTION in
     h)
         usage
@@ -80,6 +79,8 @@ function getBatteryNumber() {
   echo "${iBatteryNumber}"
 }
 
+# getBatteryInUse() {{{1
+# Retrun the name of the draining/charging battery
 function getBatteryInUse() {
   local sBatInUse=""
   local aBattery=()
@@ -88,13 +89,7 @@ function getBatteryInUse() {
   done < <(find /sys/class/power_supply/ -maxdepth 1 -mindepth 1 -name "BAT*" -type l -print0)
   for sBat in "${aBattery[@]}" ; do
     sState=$(cat "${sBat}"/status)
-    # let's trim space
-    # sState="${sState##*( )}"
-    # echo "cat "${sBat}"/status"
-    # echo "${sbat} ${sState}"
-    # echo "${sState}"
-    if [[ "${sState}" == "Discharging" ]]; then
-      # echo "test true ${sBat}"
+    if [[ "${sState}" == "Discharging" || "${sState}" == "Charging" ]]; then
       sBatInUse=$(basename "${sBat}")
     fi
   done
