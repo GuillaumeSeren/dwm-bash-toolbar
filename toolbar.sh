@@ -119,8 +119,8 @@ function main() {
   batteryStatus="$(getBatteryStatus)"
   batteryNumber="$(getBatteryNumber)"
   batteryInUse="$(getBatteryInUse)"
-  batteryTime="$(getBatteryTime $batteryInUse)"
-  batteryWidget="Power($batteryInUse/$batteryNumber): [$batteryStatus-$batteryTime"h"]"
+  batteryTime="~$(getBatteryTime $batteryInUse)h"
+  batteryWidget="Power($batteryInUse/$batteryNumber): [$batteryStatus $batteryTime]"
 
   # Keyboard layout
   if [ "`xset -q | awk -F \" \" '/Group 2/ {print($4)}'`" = "on" ]; then
