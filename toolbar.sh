@@ -43,7 +43,6 @@ DOC
 # Get the param of the script.
 while getopts ":h" OPTION
 do
-    flagGetOpts=1
     case $OPTION in
     h)
         usage
@@ -56,38 +55,6 @@ do
         ;;
     esac
 done
-# # We check if getopts did not find no any param
-# if [ "$flagGetOpts" == 0 ]; then
-#     echo 'This script cannot be launched without options.'
-#     usage
-#     exit 1
-# fi
-
-# Function battery
-function getBattery() {
-  if [ "$( cat /sys/class/power_supply/AC/online )" -eq "1" ]; then
-    DWM_BATTERY="AC";
-    DWM_RENEW_INT=1;
-  else
-    # We are on the battery
-    # count the number of battery in the system
-    declare -a BAT_ARRAY
-    while read -r -d ''; do
-      BAT_ARRAY+=("${filename}")
-    done < <(find /sys/class/power_supply/ -maxdepth 1 -mindepth 1 -name "BAT*" -type l -print0)
-    DWM_BATTERY_NUMBER=${#BAT_ARRAY[*]}
-    # Now we get the status of each BAT
-    declare -A BAT_STATUS
-    for i in "$BAT_ARRAY"
-    do
-      echo "$i"
-    done
-    # Detect the active battery
-    DWM_BATTERY=$(( `cat /sys/class/power_supply/BAT0/energy_now` * 100 / `cat /sys/class/power_supply/BAT0/energy_full` ));
-    DWM_RENEW_INT=10;
-    unset -v BAT_ARRAY
-  fi;
-}
 
 # getBatteryStatus() {{{1
 function getBatteryStatus() {
@@ -112,6 +79,8 @@ function getBatteryNumber() {
   echo "${iBatteryNumber}"
 }
 
+# getBatteryInUse() {{{1
+# Retrun the name of the draining/charging battery
 function getBatteryInUse() {
   local sBatInUse=""
   local aBattery=()
@@ -120,13 +89,7 @@ function getBatteryInUse() {
   done < <(find /sys/class/power_supply/ -maxdepth 1 -mindepth 1 -name "BAT*" -type l -print0)
   for sBat in "${aBattery[@]}" ; do
     sState=$(cat "${sBat}"/status)
-    # let's trim space
-    # sState="${sState##*( )}"
-    # echo "cat "${sBat}"/status"
-    # echo "${sbat} ${sState}"
-    # echo "${sState}"
-    if [[ "${sState}" == "Charging" ]]; then
-      # echo "test true ${sBat}"
+    if [[ "${sState}" == "Discharging" || "${sState}" == "Charging" ]]; then
       sBatInUse=$(basename "${sBat}")
     fi
   done
@@ -134,32 +97,30 @@ function getBatteryInUse() {
   echo "${sBatInUse}"
 }
 
+# getBatteryTime() {{{1
+# Return time remaining (in hour) for a given battery
+function getBatteryTime() {
+  local iTime=0
+  # we need the battery name
+  if [[ -n "$1" && "$1" != "false" ]]; then
+    local iBatFull=$(cat /sys/class/power_supply/"$1"/energy_full)
+    local iBatChargeNow=$(cat /sys/class/power_supply/"$1"/energy_now)
+    iTime=$((iBatFull - iBatChargeNow))
+    iTime=$((iTime / iBatChargeNow))
+  fi
+  echo "${iTime}"
+}
+
 # generate toolbar {{{1
 function main() {
   # Temp
   # CPU
   # Power/Battery Status
-  batteryStatus=$(getBatteryStatus)
-  # if [[ "${batteryStatus}" == "AC" ]]; then
-  #   # AC MODE
-  # else
-  #   # DC MODE
-  # fi
-  batteryNumber=$(getBatteryNumber)
-  batteryInUse=$(getBatteryInUse)
-  # echo $batteryStatus $batteryNumber  $batteryInUse
-  batteryWidget="Power($batteryInUse/$batteryNumber): [$batteryStatus]"
-  # echo $batteryWidget
-  # exit 3
-  # batteryTimeRemaining=
-  name=$(getBattery "$")
-
-  # Wi-Fi eSSID
-  # if [ "$( cat /sys/class/net/eth1/rfkill1/state )" -eq "1" ]; then
-  #   DWM_ESSID=$( /sbin/iwgetid -r );
-  # else
-  #   DWM_ESSID="OFF";
-  # fi;
+  batteryStatus="$(getBatteryStatus)"
+  batteryNumber="$(getBatteryNumber)"
+  batteryInUse="$(getBatteryInUse)"
+  batteryTime="~$(getBatteryTime $batteryInUse)h"
+  batteryWidget="Power($batteryInUse/$batteryNumber): [$batteryStatus $batteryTime]"
 
   # Keyboard layout
   if [ "`xset -q | awk -F \" \" '/Group 2/ {print($4)}'`" = "on" ]; then
@@ -179,7 +140,7 @@ function main() {
   # xsetroot -name "$DWM_STATUS";
   # sleep $DWM_RENEW_INT;
   # done &
-  echo $DWM_STATUS
+  echo "$DWM_STATUS"
 }
 main
 # }}}
