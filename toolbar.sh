@@ -57,32 +57,6 @@ do
     esac
 done
 
-# Function battery
-function getBattery() {
-  if [ "$( cat /sys/class/power_supply/AC/online )" -eq "1" ]; then
-    DWM_BATTERY="AC";
-    DWM_RENEW_INT=1;
-  else
-    # We are on the battery
-    # count the number of battery in the system
-    declare -a BAT_ARRAY
-    while read -r -d ''; do
-      BAT_ARRAY+=("${filename}")
-    done < <(find /sys/class/power_supply/ -maxdepth 1 -mindepth 1 -name "BAT*" -type l -print0)
-    DWM_BATTERY_NUMBER=${#BAT_ARRAY[*]}
-    # Now we get the status of each BAT
-    declare -A BAT_STATUS
-    for i in "$BAT_ARRAY"
-    do
-      echo "$i"
-    done
-    # Detect the active battery
-    DWM_BATTERY=$(( `cat /sys/class/power_supply/BAT0/energy_now` * 100 / `cat /sys/class/power_supply/BAT0/energy_full` ));
-    DWM_RENEW_INT=10;
-    unset -v BAT_ARRAY
-  fi;
-}
-
 # getBatteryStatus() {{{1
 function getBatteryStatus() {
   local batteryStatus=""
@@ -119,61 +93,7 @@ function getBatteryInUse() {
     # echo "cat "${sBat}"/status"
     # echo "${sbat} ${sState}"
     # echo "${sState}"
-    if [[ "${sState}" == "Charging" ]]; then
-      # echo "test true ${sBat}"
-      sBatInUse=$(basename "${sBat}")
-    fi
-  done
-  unset -v aBattery
-  echo "${sBatInUse}"
-}
-
-# generate toolbar {{{1
-function main() {
-  # Temp
-  # CPU
-  # Power/Battery Status
-  batteryStatus=$(getBatteryStatus)
-  # if [[ "${batteryStatus}" == "AC" ]]; then
-  #   # AC MODE
-  # else
-  #   # DC MODE
-  # fi
-  batteryNumber=$(getBatteryNumber)
-  batteryInUse=$(getBatteryInUse)
-  # echo $batteryStatus $batteryNumber  $batteryInUse
-  batteryWidget="Power($batteryInUse/$batteryNumber): [$batteryStatus]"
-  # echo $batteryWidget
-  # exit 3
-  # batteryTimeRemaining=
-  name=$(getBattery "$")
-
-# getBattteryNumber() {{{1
-# count the number of battery in the system
-function getBatteryNumber() {
-  declare -a aBattery
-  while read -r -d ''; do
-    aBattery+=("${filename}")
-  done < <(find /sys/class/power_supply/ -maxdepth 1 -mindepth 1 -name "BAT*" -type l -print0)
-  local iBatteryNumber=${#aBattery[*]}
-  unset -v aBattery
-  echo "${iBatteryNumber}"
-}
-
-function getBatteryInUse() {
-  local sBatInUse=""
-  local aBattery=()
-  while IFS= read -d $'\0' -r file ; do
-    aBattery=("${aBattery[@]}" "$file")
-  done < <(find /sys/class/power_supply/ -maxdepth 1 -mindepth 1 -name "BAT*" -type l -print0)
-  for sBat in "${aBattery[@]}" ; do
-    sState=$(cat "${sBat}"/status)
-    # let's trim space
-    # sState="${sState##*( )}"
-    # echo "cat "${sBat}"/status"
-    # echo "${sbat} ${sState}"
-    # echo "${sState}"
-    if [[ "${sState}" == "Charging" ]]; then
+    if [[ "${sState}" == "Discharging" ]]; then
       # echo "test true ${sBat}"
       sBatInUse=$(basename "${sBat}")
     fi
@@ -210,7 +130,7 @@ function main() {
   # xsetroot -name "$DWM_STATUS";
   # sleep $DWM_RENEW_INT;
   # done &
-  echo $DWM_STATUS
+  echo "$DWM_STATUS"
 }
 main
 # }}}
