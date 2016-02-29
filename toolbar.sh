@@ -111,9 +111,19 @@ function getBatteryTime() {
   echo "${iTime}"
 }
 
+# getCpuTemp() {{{1
+function getCpuTemp() {
+  local temp=''
+  temp=$(acpi -t)
+  local regex='^Thermal 0: ok, (.*)\.. degrees C$'
+  [[ $temp =~ $regex ]]
+  echo "${BASH_REMATCH[1]} °C"
+}
+
 # generate toolbar {{{1
 function main() {
   # Temp
+  cpuTemp="$(getCpuTemp)"
   # CPU
   # Power/Battery Status
   batteryStatus="$(getBatteryStatus)"
@@ -136,7 +146,7 @@ function main() {
   DWM_CLOCK=$( date '+%e %b %Y %a | %k:%M' );
 
   # Overall output command
-  DWM_STATUS="WiFi: [$DWM_ESSID] | Lang: [$DWM_LAYOUT] | $batteryWidget | Vol: $DWM_VOL | $DWM_CLOCK";
+  DWM_STATUS="CPU: [$cpuTemp] | WiFi: [$DWM_ESSID] | Lang: [$DWM_LAYOUT] | $batteryWidget | Vol: $DWM_VOL | $DWM_CLOCK";
   # xsetroot -name "$DWM_STATUS";
   # sleep $DWM_RENEW_INT;
   # done &
