@@ -10,6 +10,7 @@ Here the main features of the script:
 
 MODE     | DESCRIPTION
 ---------|------------
+`Cpu`    | Cpu Temp
 `WiFi`   | The wifi interface
 `Lang`   | The keyboard layout
 `Power`  | Battery information
