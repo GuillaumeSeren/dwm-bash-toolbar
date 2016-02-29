@@ -17,7 +17,7 @@
 
 # Default variables {{{1
 # Flags :
-flagGetOpts=0
+# flagGetOpts=0
 
 # FUNCTION usage() {{{1
 # Return the helping message for the use.
@@ -103,17 +103,29 @@ function getBatteryTime() {
   local iTime=0
   # we need the battery name
   if [[ -n "$1" && "$1" != "false" ]]; then
-    local iBatFull=$(cat /sys/class/power_supply/"$1"/energy_full)
-    local iBatChargeNow=$(cat /sys/class/power_supply/"$1"/energy_now)
+    local iBatFull=''
+    iBatFull=$(cat /sys/class/power_supply/"$1"/energy_full)
+    local iBatChargeNow=''
+    iBatChargeNow=$(cat /sys/class/power_supply/"$1"/energy_now)
     iTime=$((iBatFull - iBatChargeNow))
     iTime=$((iTime / iBatChargeNow))
   fi
   echo "${iTime}"
 }
 
+# getCpuTemp() {{{1
+function getCpuTemp() {
+  local temp=''
+  temp=$(acpi -t)
+  local regex='^Thermal 0: ok, (.*)\.. degrees C$'
+  [[ $temp =~ $regex ]]
+  echo "${BASH_REMATCH[1]} °C"
+}
+
 # generate toolbar {{{1
 function main() {
   # Temp
+  cpuTemp="$(getCpuTemp)"
   # CPU
   # Power/Battery Status
   batteryStatus="$(getBatteryStatus)"
@@ -136,7 +148,7 @@ function main() {
   DWM_CLOCK=$( date '+%e %b %Y %a | %k:%M' );
 
   # Overall output command
-  DWM_STATUS="WiFi: [$DWM_ESSID] | Lang: [$DWM_LAYOUT] | $batteryWidget | Vol: $DWM_VOL | $DWM_CLOCK";
+  DWM_STATUS="CPU: [$cpuTemp] | WiFi: [$DWM_ESSID] | Lang: [$DWM_LAYOUT] | $batteryWidget | Vol: $DWM_VOL | $DWM_CLOCK";
   # xsetroot -name "$DWM_STATUS";
   # sleep $DWM_RENEW_INT;
   # done &
