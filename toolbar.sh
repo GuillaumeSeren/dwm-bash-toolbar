@@ -17,7 +17,7 @@
 
 # Default variables {{{1
 # Flags :
-flagGetOpts=0
+# flagGetOpts=0
 
 # FUNCTION usage() {{{1
 # Return the helping message for the use.
@@ -103,8 +103,10 @@ function getBatteryTime() {
   local iTime=0
   # we need the battery name
   if [[ -n "$1" && "$1" != "false" ]]; then
-    local iBatFull=$(cat /sys/class/power_supply/"$1"/energy_full)
-    local iBatChargeNow=$(cat /sys/class/power_supply/"$1"/energy_now)
+    local iBatFull=''
+    iBatFull=$(cat /sys/class/power_supply/"$1"/energy_full)
+    local iBatChargeNow=''
+    iBatChargeNow=$(cat /sys/class/power_supply/"$1"/energy_now)
     iTime=$((iBatFull - iBatChargeNow))
     iTime=$((iTime / iBatChargeNow))
   fi
