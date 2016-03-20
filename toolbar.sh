@@ -97,20 +97,33 @@ function getBatteryInUse() {
   echo "${sBatInUse}"
 }
 
-# getBatteryTime() {{{1
+# getBatteryTimeEmpty() {{{1
 # Return time remaining (in hour) for a given battery
-function getBatteryTime() {
-  local iTime=0
+function getBatteryTimeEmpty() {
+  # we need the battery name
+  if [[ -n "$1" && "$1" != "false" ]]; then
+    local iBatPowerNow=''
+    iBatPowerNow=$(cat /sys/class/power_supply/"$1"/power_now)
+    local iBatChargeNow=''
+    iBatChargeNow=$(cat /sys/class/power_supply/"$1"/energy_now)
+    iRemainingTime=$((iBatChargeNow / iBatPowerNow))
+  fi
+  echo ${iRemainingTime}
+}
+
+# getBatteryTimeFull() {{{1
+# Return time remaining (in hour) for a given battery
+function getBatteryTimeFull() {
   # we need the battery name
   if [[ -n "$1" && "$1" != "false" ]]; then
     local iBatFull=''
     iBatFull=$(cat /sys/class/power_supply/"$1"/energy_full)
     local iBatChargeNow=''
     iBatChargeNow=$(cat /sys/class/power_supply/"$1"/energy_now)
-    iTime=$((iBatFull - iBatChargeNow))
-    iTime=$((iTime / iBatChargeNow))
+    iBatRemaining=$((iBatFull - iBatChargeNow))
+    iRemainingTime=$((iBatChargeNow / iBatRemaining))
   fi
-  echo "${iTime}"
+  echo ${iRemainingTime}
 }
 
 # getCpuTemp() {{{1
@@ -131,11 +144,19 @@ function main() {
   batteryStatus="$(getBatteryStatus)"
   batteryNumber="$(getBatteryNumber)"
   batteryInUse="$(getBatteryInUse)"
-  batteryTime="~$(getBatteryTime $batteryInUse)h"
-  batteryWidget="Power($batteryInUse/$batteryNumber): [$batteryStatus $batteryTime]"
+  if [[ "${batteryStatus}" == 'DC' ]]; then
+    # We are in DC mode → timeToEmpty !
+    batteryTime="~$(getBatteryTimeEmpty "${batteryInUse}") h"
+    batteryWidget="Power($batteryInUse/$batteryNumber): [$batteryStatus $batteryTime]"
+  else
+    # We should be in AC mode → timeToFull !
+    batteryTime="~$(getBatteryTimeFull "${batteryInUse}") h"
+    batteryWidget="Power($batteryInUse/$batteryNumber): [$batteryStatus $batteryTime]"
+  fi
 
   # Keyboard layout
-  if [ "`xset -q | awk -F \" \" '/Group 2/ {print($4)}'`" = "on" ]; then
+  sKeyLayout="$(xset -q | awk -F " " '/Group 2/ {print($4)}')"
+  if [[ "$sKeyLayout" == "on" ]]; then
     DWM_LAYOUT="ru";
   else
     DWM_LAYOUT="en";
