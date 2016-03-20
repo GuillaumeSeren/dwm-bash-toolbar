@@ -3,7 +3,8 @@ dwm-bash-toolbar
 Simple bash toolbar for DWM
 
 ## Why ?
-Getting a light toolbar for DWM
+Getting a light & simple toolbar for DWM, try to avoid as much dependencies as
+possible.
 
 ## Features
 Here the main features of the script:
@@ -11,7 +12,7 @@ Here the main features of the script:
 MODE     | DESCRIPTION
 ---------|------------
 `Cpu`    | Cpu Temp
-`WiFi`   | The wifi interface
+`WiFi`   | The active wifi interface
 `Lang`   | The keyboard layout
 `Power`  | Battery information
 `Vol`    | Sound volume information
