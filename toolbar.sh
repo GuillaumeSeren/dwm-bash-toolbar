@@ -100,17 +100,20 @@ function getBatteryInUse() {
 # getBatteryTime() {{{1
 # Return time remaining (in hour) for a given battery
 function getBatteryTime() {
-  local iTime=0
+  # local iTime=0
   # we need the battery name
   if [[ -n "$1" && "$1" != "false" ]]; then
     local iBatFull=''
     iBatFull=$(cat /sys/class/power_supply/"$1"/energy_full)
     local iBatChargeNow=''
     iBatChargeNow=$(cat /sys/class/power_supply/"$1"/energy_now)
-    iTime=$((iBatFull - iBatChargeNow))
-    iTime=$((iTime / iBatChargeNow))
+    iBatRemaining=$((iBatFull - iBatChargeNow))
+    # iTime=$((iBatChargeNow / iTime))
+    # iTime=$((iBatChargeNow / iTime))
+    iRemainingTime=$((iBatRemaining / iBatChargeNow))
   fi
-  echo "${iTime}"
+  # echo "$iBatRemaining / $iBatChargeNow"
+  echo ${iRemainingTime}
 }
 
 # getCpuTemp() {{{1
@@ -131,11 +134,12 @@ function main() {
   batteryStatus="$(getBatteryStatus)"
   batteryNumber="$(getBatteryNumber)"
   batteryInUse="$(getBatteryInUse)"
-  batteryTime="~$(getBatteryTime $batteryInUse)h"
+  batteryTime="~$(getBatteryTime "${batteryInUse}") h"
   batteryWidget="Power($batteryInUse/$batteryNumber): [$batteryStatus $batteryTime]"
 
   # Keyboard layout
-  if [ "`xset -q | awk -F \" \" '/Group 2/ {print($4)}'`" = "on" ]; then
+  sKeyLayout="$(xset -q | awk -F " " '/Group 2/ {print($4)}')"
+  if [[ "$sKeyLayout" == "on" ]]; then
     DWM_LAYOUT="ru";
   else
     DWM_LAYOUT="en";
