@@ -99,14 +99,45 @@ function getBatteryInUse() {
 
 # getBatteryTimeEmpty() {{{1
 # Return time remaining (in hour) for a given battery
+# 1 parm is active bat name
+# 2 parm (optional) return all available bat
 function getBatteryTimeEmpty() {
   # we need the battery name
   if [[ -n "$1" && "$1" != "false" ]]; then
-    local iBatPowerNow=''
-    iBatPowerNow=$(cat /sys/class/power_supply/"$1"/power_now)
-    local iBatChargeNow=''
-    iBatChargeNow=$(cat /sys/class/power_supply/"$1"/energy_now)
+    local iBatPowerNow=0
+    local iBatChargeNow=0
+    if [[ -n "$2"  && "$2" != "false" ]]; then
+      local aPowerNow=()
+      local aChargeNow=()
+      while IFS= read -d $'\0' -r bat ; do
+        aPowerNow=("${aPowerNow[@]}" "$(cat $bat/power_now)")
+      done < <(find /sys/class/power_supply/ -maxdepth 1 -mindepth 1 -name "BAT*" -type l -print0)
+      for iPower in "${aPowerNow[@]}" ; do
+        iBatPowerNow=$(($iBatPowerNow + $iPower))
+      done
+      unset -v aPowerNow
+      while IFS= read -d $'\0' -r bat ; do
+        aEnergyNow=("${aEnergyNow[@]}" "$(cat $bat/energy_now)")
+      done < <(find /sys/class/power_supply/ -maxdepth 1 -mindepth 1 -name "BAT*" -type l -print0)
+      for iEnergy in "${aEnergyNow[@]}" ; do
+        iBatChargeNow=$(($iBatChargeNow + $iEnergy))
+      done
+      unset -v aEnergyNow
+    else
+      iBatPowerNow=$(cat /sys/class/power_supply/"$1"/power_now)
+      iBatChargeNow=$(cat /sys/class/power_supply/"$1"/energy_now)
+    fi
     iRemainingTime=$((iBatChargeNow / iBatPowerNow))
+  fi
+  echo ${iRemainingTime}
+}
+
+# This function return the time to drain all battery,
+# usefull for mutli-battery system
+function getAllBatteryTimeEmpty() {
+  local iRemainingTime=''
+  if [[ -n "$1" && "$1" != "false" ]]; then
+    iRemainingTime=$(getBatteryTimeEmpty "$1" 1)
   fi
   echo ${iRemainingTime}
 }
@@ -117,8 +148,8 @@ function getBatteryTimeFull() {
   # we need the battery name
   if [[ -n "$1" && "$1" != "false" ]]; then
     local iBatFull=''
-    iBatFull=$(cat /sys/class/power_supply/"$1"/energy_full)
     local iBatChargeNow=''
+    iBatFull=$(cat /sys/class/power_supply/"$1"/energy_full)
     iBatChargeNow=$(cat /sys/class/power_supply/"$1"/energy_now)
     iBatRemaining=$((iBatFull - iBatChargeNow))
     iRemainingTime=$((iBatChargeNow / iBatRemaining))
@@ -146,11 +177,11 @@ function main() {
   batteryInUse="$(getBatteryInUse)"
   if [[ "${batteryStatus}" == 'DC' ]]; then
     # We are in DC mode → timeToEmpty !
-    batteryTime="~$(getBatteryTimeEmpty "${batteryInUse}") h"
+    batteryTime="~$(getAllBatteryTimeEmpty "${batteryInUse}") h"
     batteryWidget="Power($batteryInUse/$batteryNumber): [$batteryStatus $batteryTime]"
   else
     # We should be in AC mode → timeToFull !
-    batteryTime="~$(getBatteryTimeFull "${batteryInUse}") h"
+    batteryTime="~$(getBatteryTimeFull "${batteryInUse}" 1) h"
     batteryWidget="Power($batteryInUse/$batteryNumber): [$batteryStatus $batteryTime]"
   fi
 
