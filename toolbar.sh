@@ -147,12 +147,41 @@ function getAllBatteryTimeEmpty() {
 function getBatteryTimeFull() {
   # we need the battery name
   if [[ -n "$1" && "$1" != "false" ]]; then
-    local iBatFull=''
-    local iBatChargeNow=''
-    iBatFull=$(cat /sys/class/power_supply/"$1"/energy_full)
-    iBatChargeNow=$(cat /sys/class/power_supply/"$1"/energy_now)
-    iBatRemaining=$((iBatFull - iBatChargeNow))
+    local iBatPowerFull=0
+    local iBatChargeNow=0
+    if [[ -n "$2"  && "$2" != "false" ]]; then
+      local aPowerFull=()
+      local aChargeNow=()
+      while IFS= read -d $'\0' -r bat ; do
+        aPowerFull=("${aPowerNow[@]}" "$(cat $bat/energy_full)")
+      done < <(find /sys/class/power_supply/ -maxdepth 1 -mindepth 1 -name "BAT*" -type l -print0)
+      for iPowerFull in "${aPowerFull[@]}" ; do
+        iBatPowerFull=$(($iBatPowerFull + $iPowerFull))
+      done
+      unset -v aPowerFull
+      while IFS= read -d $'\0' -r bat ; do
+        aEnergyNow=("${aEnergyNow[@]}" "$(cat $bat/energy_now)")
+      done < <(find /sys/class/power_supply/ -maxdepth 1 -mindepth 1 -name "BAT*" -type l -print0)
+      for iEnergy in "${aEnergyNow[@]}" ; do
+        iBatChargeNow=$(($iBatChargeNow + $iEnergy))
+      done
+      unset -v aEnergyNow
+    else
+      iBatPowerFull=$(cat /sys/class/power_supply/"$1"/energy_full)
+      iBatChargeNow=$(cat /sys/class/power_supply/"$1"/energy_now)
+    fi
+    iBatRemaining=$((iBatPowerFull - iBatChargeNow))
     iRemainingTime=$((iBatChargeNow / iBatRemaining))
+  fi
+  echo ${iRemainingTime}
+}
+
+# This function return the time to charge all battery,
+# usefull for mutli-battery system
+function getAllBatteryTimeFull() {
+  local iRemainingTime=''
+  if [[ -n "$1" && "$1" != "false" ]]; then
+    iRemainingTime=$(getBatteryTimeFull "$1" 1)
   fi
   echo ${iRemainingTime}
 }
@@ -181,9 +210,10 @@ function main() {
     batteryWidget="Power($batteryInUse/$batteryNumber): [$batteryStatus $batteryTime]"
   else
     # We should be in AC mode → timeToFull !
-    batteryTime="~$(getBatteryTimeFull "${batteryInUse}" 1) h"
+    batteryTime="~$(getAllBatteryTimeFull "${batteryInUse}") h"
     batteryWidget="Power($batteryInUse/$batteryNumber): [$batteryStatus $batteryTime]"
   fi
+  # @TODO When full change the output to juste AC
 
   # Keyboard layout
   sKeyLayout="$(xset -q | awk -F " " '/Group 2/ {print($4)}')"
