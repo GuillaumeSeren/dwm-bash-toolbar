@@ -225,7 +225,7 @@ function main() {
   fi;
 
   # Volume Level
-  DWM_VOL=$( amixer -c1 sget Master | awk -vORS=' ' '/Mono:/ {print($6$4)}' );
+  DWM_VOL=$( pacmd list-sinks | grep "volume" | head -n1 | cut -d: -f3 | cut -d% -f1 | tr -d "[:space:]" | cut -d/ -f2 )" %";
 
   # Date and Time
   DWM_CLOCK=$( date '+%e %b %Y %a | %k:%M' );
