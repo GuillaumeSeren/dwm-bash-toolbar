@@ -177,7 +177,7 @@ function getBatteryTimeFull() {
 }
 
 # This function return the time to charge all battery,
-# usefull for mutli-battery system
+# useful for multi battery system
 function getAllBatteryTimeFull() {
   local iRemainingTime=''
   if [[ -n "$1" && "$1" != "false" ]]; then
