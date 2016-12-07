@@ -163,16 +163,16 @@ function getBatteryTimeFull() {
       while IFS= read -d $'\0' -r bat ; do
         aChargeNow=("${aChargeNow[@]}" "$(cat "$bat"/energy_now)")
       done < <(find /sys/class/power_supply/ -maxdepth 1 -mindepth 1 -name "BAT*" -type l -print0)
-      for iEnergy in "${aEnergyNow[@]}" ; do
-        iBatChargeNow=$(($iBatChargeNow + $iEnergy))
+      for iCharge in "${aChargeNow[@]}" ; do
+        iBatChargeNow=$(($iBatChargeNow + $iCharge))
       done
-      unset -v aEnergyNow
+      unset -v aChargeNow
     else
       iBatPowerFull=$(cat /sys/class/power_supply/"$1"/energy_full)
       iBatChargeNow=$(cat /sys/class/power_supply/"$1"/energy_now)
     fi
     iBatRemaining=$((iBatPowerFull - iBatChargeNow))
-    iRemainingTime=$((iBatChargeNow / iBatRemaining))
+    iRemainingTime=$((iBatRemaining / iBatChargeNow))
   fi
   echo ${iRemainingTime}
 }
@@ -207,11 +207,11 @@ function main() {
   batteryInUse="$(getBatteryInUse)"
   if [[ "${batteryStatus}" == 'DC' ]]; then
     # We are in DC mode → timeToEmpty !
-    batteryTime="~$(getAllBatteryTimeEmpty "${batteryInUse}") h"
+    batteryTime="-$(getAllBatteryTimeEmpty "${batteryInUse}") h"
     batteryWidget="Power($batteryInUse/$batteryNumber): [$batteryStatus $batteryTime]"
   else
     # We should be in AC mode → timeToFull !
-    batteryTime="~$(getAllBatteryTimeFull "${batteryInUse}") h"
+    batteryTime="+$(getAllBatteryTimeFull "${batteryInUse}") h"
     batteryWidget="Power($batteryInUse/$batteryNumber): [$batteryStatus $batteryTime]"
   fi
 
