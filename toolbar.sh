@@ -12,6 +12,7 @@
 # @TODO: Add check on required program.
 # @TODO: When full charged change the output AC
 # @TODO: Add support for pulseaudio
+# @TODO: Export the volume to a specific function
 
 # Error Codes {{{1
 # 0 - Ok
