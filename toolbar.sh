@@ -9,7 +9,10 @@
 # ---------------------------------------------
 
 # TaskList {{{1
-#@TODO: Add check on required program.
+# @TODO: Add check on required program.
+# @TODO: When full charged change the output AC
+# @TODO: Add support for pulseaudio
+# @TODO: Export the volume to a specific function
 
 # Error Codes {{{1
 # 0 - Ok
@@ -110,14 +113,14 @@ function getBatteryTimeEmpty() {
       local aPowerNow=()
       local aChargeNow=()
       while IFS= read -d $'\0' -r bat ; do
-        aPowerNow=("${aPowerNow[@]}" "$(cat $bat/power_now)")
+        aPowerNow=("${aPowerNow[@]}" "$(cat "$bat"/power_now)")
       done < <(find /sys/class/power_supply/ -maxdepth 1 -mindepth 1 -name "BAT*" -type l -print0)
       for iPower in "${aPowerNow[@]}" ; do
         iBatPowerNow=$(($iBatPowerNow + $iPower))
       done
       unset -v aPowerNow
       while IFS= read -d $'\0' -r bat ; do
-        aEnergyNow=("${aEnergyNow[@]}" "$(cat $bat/energy_now)")
+        aEnergyNow=("${aEnergyNow[@]}" "$(cat "$bat"/energy_now)")
       done < <(find /sys/class/power_supply/ -maxdepth 1 -mindepth 1 -name "BAT*" -type l -print0)
       for iEnergy in "${aEnergyNow[@]}" ; do
         iBatChargeNow=$(($iBatChargeNow + $iEnergy))
@@ -133,7 +136,7 @@ function getBatteryTimeEmpty() {
 }
 
 # This function return the time to drain all battery,
-# usefull for mutli-battery system
+# useful for multi battery system
 function getAllBatteryTimeEmpty() {
   local iRemainingTime=''
   if [[ -n "$1" && "$1" != "false" ]]; then
@@ -153,31 +156,31 @@ function getBatteryTimeFull() {
       local aPowerFull=()
       local aChargeNow=()
       while IFS= read -d $'\0' -r bat ; do
-        aPowerFull=("${aPowerNow[@]}" "$(cat $bat/energy_full)")
+        aPowerFull=("${aPowerNow[@]}" "$(cat "$bat"/energy_full)")
       done < <(find /sys/class/power_supply/ -maxdepth 1 -mindepth 1 -name "BAT*" -type l -print0)
       for iPowerFull in "${aPowerFull[@]}" ; do
         iBatPowerFull=$(($iBatPowerFull + $iPowerFull))
       done
       unset -v aPowerFull
       while IFS= read -d $'\0' -r bat ; do
-        aEnergyNow=("${aEnergyNow[@]}" "$(cat $bat/energy_now)")
+        aChargeNow=("${aChargeNow[@]}" "$(cat "$bat"/energy_now)")
       done < <(find /sys/class/power_supply/ -maxdepth 1 -mindepth 1 -name "BAT*" -type l -print0)
-      for iEnergy in "${aEnergyNow[@]}" ; do
-        iBatChargeNow=$(($iBatChargeNow + $iEnergy))
+      for iCharge in "${aChargeNow[@]}" ; do
+        iBatChargeNow=$(($iBatChargeNow + $iCharge))
       done
-      unset -v aEnergyNow
+      unset -v aChargeNow
     else
       iBatPowerFull=$(cat /sys/class/power_supply/"$1"/energy_full)
       iBatChargeNow=$(cat /sys/class/power_supply/"$1"/energy_now)
     fi
     iBatRemaining=$((iBatPowerFull - iBatChargeNow))
-    iRemainingTime=$((iBatChargeNow / iBatRemaining))
+    iRemainingTime=$((iBatRemaining / iBatChargeNow))
   fi
   echo ${iRemainingTime}
 }
 
 # This function return the time to charge all battery,
-# usefull for mutli-battery system
+# useful for multi battery system
 function getAllBatteryTimeFull() {
   local iRemainingTime=''
   if [[ -n "$1" && "$1" != "false" ]]; then
@@ -206,14 +209,13 @@ function main() {
   batteryInUse="$(getBatteryInUse)"
   if [[ "${batteryStatus}" == 'DC' ]]; then
     # We are in DC mode → timeToEmpty !
-    batteryTime="~$(getAllBatteryTimeEmpty "${batteryInUse}") h"
+    batteryTime="-$(getAllBatteryTimeEmpty "${batteryInUse}") h"
     batteryWidget="Power($batteryInUse/$batteryNumber): [$batteryStatus $batteryTime]"
   else
     # We should be in AC mode → timeToFull !
-    batteryTime="~$(getAllBatteryTimeFull "${batteryInUse}") h"
+    batteryTime="+$(getAllBatteryTimeFull "${batteryInUse}") h"
     batteryWidget="Power($batteryInUse/$batteryNumber): [$batteryStatus $batteryTime]"
   fi
-  # @TODO When full change the output to juste AC
 
   # Keyboard layout
   sKeyLayout="$(xset -q | awk -F " " '/Group 2/ {print($4)}')"
@@ -224,16 +226,13 @@ function main() {
   fi;
 
   # Volume Level
-  DWM_VOL=$( amixer -c1 sget Master | awk -vORS=' ' '/Mono:/ {print($6$4)}' );
+  DWM_VOL=$( pacmd list-sinks | grep "volume" | head -n1 | cut -d: -f3 | cut -d% -f1 | tr -d "[:space:]" | cut -d/ -f2 )" %";
 
   # Date and Time
   DWM_CLOCK=$( date '+%e %b %Y %a | %k:%M' );
 
   # Overall output command
   DWM_STATUS="CPU: [$cpuTemp] | WiFi: [$DWM_ESSID] | Lang: [$DWM_LAYOUT] | $batteryWidget | Vol: $DWM_VOL | $DWM_CLOCK";
-  # xsetroot -name "$DWM_STATUS";
-  # sleep $DWM_RENEW_INT;
-  # done &
   echo "$DWM_STATUS"
 }
 main
