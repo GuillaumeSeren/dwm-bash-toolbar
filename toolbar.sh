@@ -11,6 +11,7 @@
 # TaskList {{{1
 # @TODO: Add check on required program.
 # @TODO: When full charged change the output AC
+# @TODO: Add support for pulseaudio
 
 # Error Codes {{{1
 # 0 - Ok
