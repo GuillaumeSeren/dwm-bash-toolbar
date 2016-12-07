@@ -2,6 +2,10 @@ dwm-bash-toolbar
 ================
 Simple bash toolbar for [dwm][dwm]
 
+```
+CPU: [51 °C] | WiFi: [] | Lang: [en] | Power(BAT1/2): [DC -8 h] | Vol: 80 % |  7 Dec 2016 Wed | 18:13
+```
+
 ## Why ?
 Getting a light & simple toolbar for [dwm][dwm],
 try to avoid as much dependencies as possible.
@@ -11,12 +15,12 @@ Here the main features of the script:
 
 MODE     | DESCRIPTION
 ---------|------------
-`Cpu`    | Cpu Temp
+`CPU`    | Cpu Temp
 `WiFi`   | The active wifi interface
-`Lang`   | The keyboard layout
+`KEYB`   | The keyboard layout
 `Power`  | Battery information
-`Vol`    | Sound volume information
-`Date`   | Date and time
+`VOL`    | Sound volume information
+`DATE`   | Date and time
 
 ## Participate !
 If you find it useful, and would like to add your tips and tricks in it,
