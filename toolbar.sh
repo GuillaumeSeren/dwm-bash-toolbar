@@ -110,14 +110,14 @@ function getBatteryTimeEmpty() {
       local aPowerNow=()
       local aChargeNow=()
       while IFS= read -d $'\0' -r bat ; do
-        aPowerNow=("${aPowerNow[@]}" "$(cat $bat/power_now)")
+        aPowerNow=("${aPowerNow[@]}" "$(cat "$bat"/power_now)")
       done < <(find /sys/class/power_supply/ -maxdepth 1 -mindepth 1 -name "BAT*" -type l -print0)
       for iPower in "${aPowerNow[@]}" ; do
         iBatPowerNow=$(($iBatPowerNow + $iPower))
       done
       unset -v aPowerNow
       while IFS= read -d $'\0' -r bat ; do
-        aEnergyNow=("${aEnergyNow[@]}" "$(cat $bat/energy_now)")
+        aEnergyNow=("${aEnergyNow[@]}" "$(cat "$bat"/energy_now)")
       done < <(find /sys/class/power_supply/ -maxdepth 1 -mindepth 1 -name "BAT*" -type l -print0)
       for iEnergy in "${aEnergyNow[@]}" ; do
         iBatChargeNow=$(($iBatChargeNow + $iEnergy))
@@ -153,14 +153,14 @@ function getBatteryTimeFull() {
       local aPowerFull=()
       local aChargeNow=()
       while IFS= read -d $'\0' -r bat ; do
-        aPowerFull=("${aPowerNow[@]}" "$(cat $bat/energy_full)")
+        aPowerFull=("${aPowerNow[@]}" "$(cat "$bat"/energy_full)")
       done < <(find /sys/class/power_supply/ -maxdepth 1 -mindepth 1 -name "BAT*" -type l -print0)
       for iPowerFull in "${aPowerFull[@]}" ; do
         iBatPowerFull=$(($iBatPowerFull + $iPowerFull))
       done
       unset -v aPowerFull
       while IFS= read -d $'\0' -r bat ; do
-        aEnergyNow=("${aEnergyNow[@]}" "$(cat $bat/energy_now)")
+        aChargeNow=("${aChargeNow[@]}" "$(cat "$bat"/energy_now)")
       done < <(find /sys/class/power_supply/ -maxdepth 1 -mindepth 1 -name "BAT*" -type l -print0)
       for iEnergy in "${aEnergyNow[@]}" ; do
         iBatChargeNow=$(($iBatChargeNow + $iEnergy))
