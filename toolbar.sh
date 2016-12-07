@@ -214,7 +214,6 @@ function main() {
     batteryTime="~$(getAllBatteryTimeFull "${batteryInUse}") h"
     batteryWidget="Power($batteryInUse/$batteryNumber): [$batteryStatus $batteryTime]"
   fi
-  # @TODO When full change the output to juste AC
 
   # Keyboard layout
   sKeyLayout="$(xset -q | awk -F " " '/Group 2/ {print($4)}')"
@@ -232,9 +231,6 @@ function main() {
 
   # Overall output command
   DWM_STATUS="CPU: [$cpuTemp] | WiFi: [$DWM_ESSID] | Lang: [$DWM_LAYOUT] | $batteryWidget | Vol: $DWM_VOL | $DWM_CLOCK";
-  # xsetroot -name "$DWM_STATUS";
-  # sleep $DWM_RENEW_INT;
-  # done &
   echo "$DWM_STATUS"
 }
 main
