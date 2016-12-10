@@ -13,6 +13,8 @@
 # @TODO: When full charged change the output AC
 # @TODO: Add support for pulseaudio
 # @TODO: Export the volume to a specific function
+# @TODO: Refactor Network change wifi / ether as available
+# @TODO: Display AP name in WIFI module
 
 # Error Codes {{{1
 # 0 - Ok
@@ -229,10 +231,12 @@ function main() {
   DWM_VOL=$( pacmd list-sinks | grep "volume" | head -n1 | cut -d: -f3 | cut -d% -f1 | tr -d "[:space:]" | cut -d/ -f2 )" %";
 
   # Date and Time
-  DWM_CLOCK=$( date '+%e %b %Y %a | %k:%M' );
+  DWM_DATE=$( date '+%Y-%m-%d %a' );
+  DWM_CLOCK=$( date '+%k:%M' );
 
   # Overall output command
-  DWM_STATUS="CPU: [$cpuTemp] | WiFi: [$DWM_ESSID] | Lang: [$DWM_LAYOUT] | $batteryWidget | Vol: $DWM_VOL | $DWM_CLOCK";
+  # DWM_STATUS="CPU $cpuTemp | WiFi $DWM_ESSID | Lang $DWM_LAYOUT | $batteryWidget | Vol $DWM_VOL | $DWM_DATE | $DWM_CLOCK";
+  DWM_STATUS="CPU $cpuTemp | Lang $DWM_LAYOUT | $batteryWidget | Vol $DWM_VOL | $DWM_DATE | $DWM_CLOCK";
   echo "$DWM_STATUS"
 }
 main
