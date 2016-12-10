@@ -3,7 +3,7 @@ dwm-bash-toolbar
 Simple bash toolbar for [dwm][dwm]
 
 ```
-CPU: [51 °C] | WiFi: [] | Lang: [en] | Power(BAT1/2): [DC -8 h] | Vol: 80 % |  7 Dec 2016 Wed | 18:13
+CPU 49 °C | Lang en | Power(BAT1/2): [DC -7 h] | Vol 100 % | 2016-12-10 Sat | 15:52
 ```
 
 ## Why ?
