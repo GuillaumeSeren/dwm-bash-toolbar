@@ -23,6 +23,7 @@
 # Default variables {{{1
 # Flags :
 # flagGetOpts=0
+dependencies='cat find'
 
 # FUNCTION usage() {{{1
 # Return the helping message for the use.
@@ -200,8 +201,31 @@ function getCpuTemp() {
   echo "${BASH_REMATCH[1]} °C"
 }
 
+# FUNCTION checkDependencies() {{{1
+# Test if needed dependencies are available.
+function checkDependencies()
+{
+  deps_ok='YES'
+  for dep in $1
+  do
+    if  ! which "$dep" &>/dev/null;  then
+      echo "This script requires $dep to run but it is not installed"
+      deps_ok='NO'
+    fi
+  done
+  if [[ "$deps_ok" == "NO" ]]; then
+    echo "This script need : $1"
+    echo "Please install them, before using this script !"
+    exit 3
+  else
+    return 0
+  fi
+}
+
 # generate toolbar {{{1
 function main() {
+  # echo ">>>> Checking dependencies"
+  checkDependencies "$dependencies"
   # Temp
   cpuTemp="$(getCpuTemp)"
   # CPU
