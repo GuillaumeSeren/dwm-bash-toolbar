@@ -9,9 +9,7 @@
 # ---------------------------------------------
 
 # TaskList {{{1
-# @TODO: Add check on required program.
 # @TODO: When full charged change the output AC
-# @TODO: Add support for pulseaudio
 # @TODO: Export the volume to a specific function
 # @TODO: Refactor Network change wifi / ether as available
 # @TODO: Display AP name in WIFI module
@@ -265,4 +263,5 @@ function main() {
 }
 main
 # }}}
+
 # vim: set ft=sh ts=2 sw=2 tw=80 foldmethod=marker et :
