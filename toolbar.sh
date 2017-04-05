@@ -13,6 +13,8 @@
 # @TODO: Export the volume to a specific function
 # @TODO: Refactor Network change wifi / ether as available
 # @TODO: Display AP name in WIFI module
+# @TODO: Add CPU usage
+# @TODO: Add WIFI dbm if connected on a hotspot
 
 # Error Codes {{{1
 # 0 - Ok
