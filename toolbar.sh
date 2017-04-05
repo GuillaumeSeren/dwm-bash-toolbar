@@ -13,6 +13,8 @@
 # @TODO: Export the volume to a specific function
 # @TODO: Refactor Network change wifi / ether as available
 # @TODO: Display AP name in WIFI module
+# @TODO: Add CPU usage
+# @TODO: Add WIFI dbm if connected on a hotspot
 
 # Error Codes {{{1
 # 0 - Ok
@@ -241,14 +243,6 @@ function main() {
     batteryWidget="Power($batteryInUse/$batteryNumber): [$batteryStatus $batteryTime]"
   fi
 
-  # Keyboard layout
-  sKeyLayout="$(xset -q | awk -F " " '/Group 2/ {print($4)}')"
-  if [[ "$sKeyLayout" == "on" ]]; then
-    DWM_LAYOUT="ru";
-  else
-    DWM_LAYOUT="en";
-  fi;
-
   # Volume Level
   DWM_VOL=$( pacmd list-sinks | grep "volume" | head -n1 | cut -d: -f3 | cut -d% -f1 | tr -d "[:space:]" | cut -d/ -f2 )" %";
 
@@ -258,7 +252,7 @@ function main() {
 
   # Overall output command
   # DWM_STATUS="CPU $cpuTemp | WiFi $DWM_ESSID | Lang $DWM_LAYOUT | $batteryWidget | Vol $DWM_VOL | $DWM_DATE | $DWM_CLOCK";
-  DWM_STATUS="CPU $cpuTemp | Lang $DWM_LAYOUT | $batteryWidget | Vol $DWM_VOL | $DWM_DATE | $DWM_CLOCK";
+  DWM_STATUS="CPU $cpuTemp | $batteryWidget | Vol $DWM_VOL | $DWM_DATE | $DWM_CLOCK";
   echo "$DWM_STATUS"
 }
 main
