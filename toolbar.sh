@@ -13,7 +13,6 @@
 # @TODO: Export the volume to a specific function
 # @TODO: Refactor Network change wifi / ether as available
 # @TODO: Display AP name in WIFI module
-# @TODO: Add CPU usage
 # @TODO: Add WIFI dbm if connected on a hotspot
 
 # Error Codes {{{1
@@ -249,10 +248,10 @@ function main() {
   # Date and Time
   DWM_DATE=$( date '+%Y-%m-%d %a' );
   DWM_CLOCK=$( date '+%k:%M' );
-
+  CPU_USAGE=$(top -b -n2 -p 1 | fgrep "Cpu(s)" | tail -1 | awk -F'id,' -v prefix="$prefix" '{ split($1, vs, ","); v=vs[length(vs)]; sub("%", "", v); printf "%s%.1f%%\n", prefix, 100 - v }')
   # Overall output command
   # DWM_STATUS="CPU $cpuTemp | WiFi $DWM_ESSID | Lang $DWM_LAYOUT | $batteryWidget | Vol $DWM_VOL | $DWM_DATE | $DWM_CLOCK";
-  DWM_STATUS="CPU $cpuTemp | $batteryWidget | Vol $DWM_VOL | $DWM_DATE | $DWM_CLOCK";
+  DWM_STATUS="CPU $CPU_USAGE / $cpuTemp | $batteryWidget | Vol $DWM_VOL | $DWM_DATE | $DWM_CLOCK";
   echo "$DWM_STATUS"
 }
 main
