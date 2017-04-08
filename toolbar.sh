@@ -14,6 +14,7 @@
 # @TODO: Refactor Network change wifi / ether as available
 # @TODO: Display AP name in WIFI module
 # @TODO: Add WIFI dbm if connected on a hotspot
+# @TODO: Add color simple color support
 
 # Error Codes {{{1
 # 0 - Ok
