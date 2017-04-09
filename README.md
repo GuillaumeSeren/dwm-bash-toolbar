@@ -3,7 +3,7 @@ dwm-bash-toolbar
 Simple bash toolbar for [dwm][dwm]
 
 ```
-CPU 49 °C | Lang en | Power(BAT1/2): [DC -7 h] | Vol 100 % | 2016-12-10 Sat | 15:52
+CPU 21.5 $ @ 49 °C | BAT1/2 DC -7 h | Vol 60 % | 2016-12-10 Sat | 15:52
 ```
 
 ## Why ?
@@ -16,11 +16,10 @@ Here the main features of the script:
 MODE     | DESCRIPTION
 ---------|------------
 `CPU`    | Cpu Temp
-`WiFi`   | The active wifi interface
-`KEYB`   | The keyboard layout
-`Power`  | Battery information
+`BAT`    | Battery information
 `VOL`    | Sound volume information
-`DATE`   | Date and time
+`DATE`   | Date format 8601 YYYY-MM-DD
+`HOUR`   | Hour of the day HH:MM
 
 ## Participate !
 If you find it useful, and would like to add your tips and tricks in it,

@@ -45,23 +45,6 @@ Sample:
 DOC
 }
 
-# GETOPTS {{{1
-# Get the param of the script.
-while getopts ":h" OPTION
-do
-    case $OPTION in
-    h)
-        usage
-        exit 1
-        ;;
-    ?)
-        echo "commande $1 inconnue"
-        usage
-        exit
-        ;;
-    esac
-done
-
 # getBatteryStatus() {{{1
 function getBatteryStatus() {
   local batteryStatus=""
@@ -222,7 +205,24 @@ function checkDependencies()
   fi
 }
 
-# generate toolbar {{{1
+# GETOPTS {{{1
+# Get the param of the script.
+while getopts ":h" OPTION
+do
+    case $OPTION in
+    h)
+        usage
+        exit 1
+        ;;
+    ?)
+        echo "commande $1 inconnue"
+        usage
+        exit
+        ;;
+    esac
+done
+# main() {{{1
+# generate toolbar
 function main() {
   # echo ">>>> Checking dependencies"
   checkDependencies "$dependencies"
