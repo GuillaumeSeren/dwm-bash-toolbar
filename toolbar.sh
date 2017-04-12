@@ -10,6 +10,7 @@
 
 # TaskList {{{1
 # @TODO: When full charged change the output AC
+# @TODO: When BAT charging is less than 1H switch display to minute
 # @TODO: Export the volume to a specific function
 # @TODO: Refactor Network change wifi / ether as available
 # @TODO: Display AP name in WIFI module
@@ -46,7 +47,27 @@ DOC
 }
 
 # getBatteryStatus() {{{1
+# $1 BAT_NUM if null return 'worst' state
 function getBatteryStatus() {
+  local batteryStatus=""
+  if [[ -n "$1" && "$1" != "false" ]]; then
+    batteryStatus="$(cat /sys/class/power_supply/"${1}"/status)"
+  else
+    while IFS= read -d $'\0' -r file ; do
+      aBattery=("${aBattery[@]}" "$file")
+    done < <(find /sys/class/power_supply/ -maxdepth 1 -mindepth 1 -name "BAT*" -type l -print0)
+    for sBat in "${aBattery[@]}" ; do
+      sState=$(cat "${sBat}"/status)
+      if [[ "${sState}" == "Discharging" || "${sState}" == "Charging" || "${sState}" == "Unknown" ]]; then
+        batteryStatus="${sState}"
+      fi
+    done
+  fi
+  echo "${batteryStatus}"
+}
+
+# getPowerStatus() {{{1
+function getPowerStatus() {
   local batteryStatus=""
   if [ "$( cat /sys/class/power_supply/AC/online )" -eq "1" ]; then
     batteryStatus="AC";
@@ -170,9 +191,9 @@ function getBatteryTimeFull() {
 function getAllBatteryTimeFull() {
   local iRemainingTime=''
   if [[ -n "$1" && "$1" != "false" ]]; then
-    iRemainingTime=$(getBatteryTimeFull "$1" 1)
+    iRemainingTime="$(getBatteryTimeFull "$1" 1)"
   fi
-  echo ${iRemainingTime}
+  echo "${iRemainingTime}"
 }
 
 # getCpuTemp() {{{1
@@ -221,6 +242,7 @@ do
         ;;
     esac
 done
+
 # main() {{{1
 # generate toolbar
 function main() {
@@ -230,18 +252,32 @@ function main() {
   cpuTemp="$(getCpuTemp)"
   # CPU
   # Power/Battery Status
+  # Power is AC / DC of the machine
+  powerStatus="$(getPowerStatus)"
+  # BatteryStatus is charging / Discharging / Unknown
+  # BatteryStatus should take a parm to get all bat or just a given one
   batteryStatus="$(getBatteryStatus)"
   batteryNumber="$(getBatteryNumber)"
   batteryInUse="$(getBatteryInUse)"
-  if [[ "${batteryStatus}" == 'DC' ]]; then
+  if [[ "${powerStatus}" == 'DC' ]]; then
     # We are in DC mode → timeToEmpty !
-    batteryTime="-$(getAllBatteryTimeEmpty "${batteryInUse}") h"
-    batteryWidget="$batteryInUse/$batteryNumber $batteryStatus $batteryTime"
+    batteryTime="$(getAllBatteryTimeEmpty "${batteryInUse}")"
+    if [[ "${batteryTime}" == "0" ]]; then
+      batteryTimeOutput="-${batteryTime} h"
+    else
+      batteryTimeOutput="-${batteryTime} h"
+    fi
   else
     # We should be in AC mode → timeToFull !
-    batteryTime="+$(getAllBatteryTimeFull "${batteryInUse}") h"
-    batteryWidget="$batteryInUse/$batteryNumber $batteryStatus $batteryTime"
+    batteryTime="$(getAllBatteryTimeFull "${batteryInUse}")"
+    # We need battery state charging / Discharging / unknown
+    if [[ "${batteryTime}" == "0" ]]; then
+      batteryTimeOutput=""
+    else
+      batteryTimeOutput="+${batteryTime} h"
+    fi
   fi
+  batteryWidget="$batteryInUse/$batteryNumber $powerStatus $batteryTimeOutput"
 
   # Volume Level
   DWM_VOL=$( pacmd list-sinks | grep "volume" | head -n1 | cut -d: -f3 | cut -d% -f1 | tr -d "[:space:]" | cut -d/ -f2 )" %";
