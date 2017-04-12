@@ -56,6 +56,16 @@ function getBatteryStatus() {
   echo "${batteryStatus}"
 }
 
+# getPowerStatus() {{{1
+function getPowerStatus() {
+  local batteryStatus=""
+  if [ "$( cat /sys/class/power_supply/AC/online )" -eq "1" ]; then
+    batteryStatus="AC";
+  else
+    batteryStatus="DC";
+  fi
+  echo "${batteryStatus}"
+}
 # getBattteryNumber() {{{1
 # count the number of battery in the system
 function getBatteryNumber() {
@@ -230,17 +240,33 @@ function main() {
   cpuTemp="$(getCpuTemp)"
   # CPU
   # Power/Battery Status
+  # Power is AC / DC of the machine
+  powerStatus="$(getPowerStatus)"
+  # BatteryStatus is charging / Discharging / Unknown
+  # BatteryStatus should take a parm to get all bat or just a given one
   batteryStatus="$(getBatteryStatus)"
   batteryNumber="$(getBatteryNumber)"
   batteryInUse="$(getBatteryInUse)"
-  if [[ "${batteryStatus}" == 'DC' ]]; then
+  if [[ "${powerStatus}" == 'DC' ]]; then
     # We are in DC mode → timeToEmpty !
-    batteryTime="-$(getAllBatteryTimeEmpty "${batteryInUse}") h"
-    batteryWidget="$batteryInUse/$batteryNumber $batteryStatus $batteryTime"
+    batteryTime="$(getAllBatteryTimeEmpty "${batteryInUse}")"
+    if [[ "${batteryTime}" == "0" ]]; then
+      batteryTimeOutput="-${batteryTime} h"
+    else
+      batteryTimeOutput="-${batteryTime} h"
+    fi
+    batteryWidget="$batteryInUse/$batteryNumber $powerStatus $batteryTimeOutput"
   else
     # We should be in AC mode → timeToFull !
-    batteryTime="+$(getAllBatteryTimeFull "${batteryInUse}") h"
-    batteryWidget="$batteryInUse/$batteryNumber $batteryStatus $batteryTime"
+    batteryTime="$(getAllBatteryTimeFull "${batteryInUse}")"
+    # We need battery state charging / Discharging / unknown
+    # batteryStat
+    if [[ "${batteryTime}" == "0" ]]; then
+      batteryTimeOutput="+${batteryTime} h"
+    else
+      batteryTimeOutput="+${batteryTime} h"
+    fi
+    batteryWidget="$batteryInUse/$batteryNumber $powerStatus $batteryTimeOutput"
   fi
 
   # Volume Level
