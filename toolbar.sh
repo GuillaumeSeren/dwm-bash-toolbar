@@ -51,7 +51,7 @@ DOC
 function getBatteryStatus() {
   local batteryStatus=""
   if [[ -n "$1" && "$1" != "false" ]]; then
-    batteryStatus=$(cat /sys/class/power_supply/$1/status)
+    batteryStatus="$(cat /sys/class/power_supply/"${1}"/status)"
   else
     while IFS= read -d $'\0' -r file ; do
       aBattery=("${aBattery[@]}" "$file")
@@ -76,6 +76,7 @@ function getPowerStatus() {
   fi
   echo "${batteryStatus}"
 }
+
 # getBattteryNumber() {{{1
 # count the number of battery in the system
 function getBatteryNumber() {
@@ -190,9 +191,9 @@ function getBatteryTimeFull() {
 function getAllBatteryTimeFull() {
   local iRemainingTime=''
   if [[ -n "$1" && "$1" != "false" ]]; then
-    iRemainingTime=$(getBatteryTimeFull "$1" 1)
+    iRemainingTime="$(getBatteryTimeFull "$1" 1)"
   fi
-  echo ${iRemainingTime}
+  echo "${iRemainingTime}"
 }
 
 # getCpuTemp() {{{1
@@ -241,6 +242,7 @@ do
         ;;
     esac
 done
+
 # main() {{{1
 # generate toolbar
 function main() {
