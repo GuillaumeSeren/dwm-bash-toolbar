@@ -10,6 +10,7 @@
 
 # TaskList {{{1
 # @TODO: When full charged change the output AC
+# @TODO: When BAT charging is less than 1H switch display to minute
 # @TODO: Export the volume to a specific function
 # @TODO: Refactor Network change wifi / ether as available
 # @TODO: Display AP name in WIFI module
