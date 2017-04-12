@@ -47,12 +47,21 @@ DOC
 }
 
 # getBatteryStatus() {{{1
+# $1 BAT_NUM if null return 'worst' state
 function getBatteryStatus() {
   local batteryStatus=""
-  if [ "$( cat /sys/class/power_supply/AC/online )" -eq "1" ]; then
-    batteryStatus="AC";
+  if [[ -n "$1" && "$1" != "false" ]]; then
+    batteryStatus=$(cat /sys/class/power_supply/$1/status)
   else
-    batteryStatus="DC";
+    while IFS= read -d $'\0' -r file ; do
+      aBattery=("${aBattery[@]}" "$file")
+    done < <(find /sys/class/power_supply/ -maxdepth 1 -mindepth 1 -name "BAT*" -type l -print0)
+    for sBat in "${aBattery[@]}" ; do
+      sState=$(cat "${sBat}"/status)
+      if [[ "${sState}" == "Discharging" || "${sState}" == "Charging" || "${sState}" == "Unknown" ]]; then
+        batteryStatus="${sState}"
+      fi
+    done
   fi
   echo "${batteryStatus}"
 }
@@ -256,19 +265,17 @@ function main() {
     else
       batteryTimeOutput="-${batteryTime} h"
     fi
-    batteryWidget="$batteryInUse/$batteryNumber $powerStatus $batteryTimeOutput"
   else
     # We should be in AC mode → timeToFull !
     batteryTime="$(getAllBatteryTimeFull "${batteryInUse}")"
     # We need battery state charging / Discharging / unknown
-    # batteryStat
     if [[ "${batteryTime}" == "0" ]]; then
-      batteryTimeOutput="+${batteryTime} h"
+      batteryTimeOutput=""
     else
       batteryTimeOutput="+${batteryTime} h"
     fi
-    batteryWidget="$batteryInUse/$batteryNumber $powerStatus $batteryTimeOutput"
   fi
+  batteryWidget="$batteryInUse/$batteryNumber $powerStatus $batteryTimeOutput"
 
   # Volume Level
   DWM_VOL=$( pacmd list-sinks | grep "volume" | head -n1 | cut -d: -f3 | cut -d% -f1 | tr -d "[:space:]" | cut -d/ -f2 )" %";
