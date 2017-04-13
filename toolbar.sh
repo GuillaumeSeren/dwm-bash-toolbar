@@ -66,6 +66,17 @@ function getBatteryStatus() {
   echo "${batteryStatus}"
 }
 
+# getBatteryStatusCharging
+function getBatteryStatusCharging() {
+  local batteryStatusOutput=''
+  local batteryStatus=$(getBatteryStatus)
+  # check *only* 'Charging' status
+  if [[ "${batteryStatus}" == "Charging" ]]; then
+    batteryStatusOutput="${batteryStatus}"
+  fi
+  echo "${batteryStatusOutpu}"
+}
+
 # getPowerStatus() {{{1
 function getPowerStatus() {
   local batteryStatus=""
@@ -257,6 +268,7 @@ function main() {
   # BatteryStatus is charging / Discharging / Unknown
   # BatteryStatus should take a parm to get all bat or just a given one
   batteryStatus="$(getBatteryStatus)"
+  batteryStatusCharging=$(getBatteryStatusCharging)
   batteryNumber="$(getBatteryNumber)"
   batteryInUse="$(getBatteryInUse)"
   if [[ "${powerStatus}" == 'DC' ]]; then
@@ -271,8 +283,8 @@ function main() {
     # We should be in AC mode → timeToFull !
     batteryTime="$(getAllBatteryTimeFull "${batteryInUse}")"
     # We need battery state charging / Discharging / unknown
-    if [[ "${batteryTime}" == "0" ]]; then
-      batteryTimeOutput=""
+    if [[ "${batteryTime}" == "0" && "${batteryStatusCharging}" != "Charging" && "${batteryStatusCharging}" != '' ]]; then
+      batteryTimeOutput="${batteryStatusCharging}"
     else
       batteryTimeOutput="+${batteryTime} h"
     fi
