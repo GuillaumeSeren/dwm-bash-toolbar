@@ -66,6 +66,18 @@ function getBatteryStatus() {
   echo "${batteryStatus}"
 }
 
+# getBatteryStatusCharging
+function getBatteryStatusCharging() {
+  local batteryStatusOutput=''
+  local batteryStatus=''
+  batteryStatus=$(getBatteryStatus)
+  # check *only* 'Charging' status
+  if [[ "${batteryStatus}" == "Charging" ]]; then
+    batteryStatusOutput="${batteryStatus}"
+  fi
+  echo "${batteryStatusOutput}"
+}
+
 # getPowerStatus() {{{1
 function getPowerStatus() {
   local batteryStatus=""
@@ -123,14 +135,14 @@ function getBatteryTimeEmpty() {
         aPowerNow=("${aPowerNow[@]}" "$(cat "$bat"/power_now)")
       done < <(find /sys/class/power_supply/ -maxdepth 1 -mindepth 1 -name "BAT*" -type l -print0)
       for iPower in "${aPowerNow[@]}" ; do
-        iBatPowerNow=$(($iBatPowerNow + $iPower))
+        iBatPowerNow=$((iBatPowerNow + iPower))
       done
       unset -v aPowerNow
       while IFS= read -d $'\0' -r bat ; do
         aEnergyNow=("${aEnergyNow[@]}" "$(cat "$bat"/energy_now)")
       done < <(find /sys/class/power_supply/ -maxdepth 1 -mindepth 1 -name "BAT*" -type l -print0)
       for iEnergy in "${aEnergyNow[@]}" ; do
-        iBatChargeNow=$(($iBatChargeNow + $iEnergy))
+        iBatChargeNow=$((iBatChargeNow + iEnergy))
       done
       unset -v aEnergyNow
     else
@@ -149,7 +161,7 @@ function getAllBatteryTimeEmpty() {
   if [[ -n "$1" && "$1" != "false" ]]; then
     iRemainingTime=$(getBatteryTimeEmpty "$1" 1)
   fi
-  echo ${iRemainingTime}
+  echo "${iRemainingTime}"
 }
 
 # getBatteryTimeFull() {{{1
@@ -256,7 +268,8 @@ function main() {
   powerStatus="$(getPowerStatus)"
   # BatteryStatus is charging / Discharging / Unknown
   # BatteryStatus should take a parm to get all bat or just a given one
-  batteryStatus="$(getBatteryStatus)"
+  # batteryStatus="$(getBatteryStatus)"
+  batteryStatusCharging=$(getBatteryStatusCharging)
   batteryNumber="$(getBatteryNumber)"
   batteryInUse="$(getBatteryInUse)"
   if [[ "${powerStatus}" == 'DC' ]]; then
@@ -271,8 +284,8 @@ function main() {
     # We should be in AC mode → timeToFull !
     batteryTime="$(getAllBatteryTimeFull "${batteryInUse}")"
     # We need battery state charging / Discharging / unknown
-    if [[ "${batteryTime}" == "0" ]]; then
-      batteryTimeOutput=""
+    if [[ "${batteryTime}" == "0" && "${batteryStatusCharging}" != "Charging" && "${batteryStatusCharging}" != '' ]]; then
+      batteryTimeOutput="${batteryStatusCharging}"
     else
       batteryTimeOutput="+${batteryTime} h"
     fi
