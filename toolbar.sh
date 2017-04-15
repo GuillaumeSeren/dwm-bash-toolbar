@@ -48,7 +48,7 @@ Sample:
 DOC
 }
 
-# getBatteryStatus() {{{1
+# FUNCTION getBatteryStatus() {{{1
 # $1 BAT_NUM if null return 'worst' state
 function getBatteryStatus() {
   local batteryStatus=""
@@ -68,7 +68,7 @@ function getBatteryStatus() {
   echo "${batteryStatus}"
 }
 
-# getBatteryStatusCharging
+# FUNCTION getBatteryStatusCharging
 function getBatteryStatusCharging() {
   local batteryStatusOutput=''
   local batteryStatus=''
@@ -80,7 +80,7 @@ function getBatteryStatusCharging() {
   echo "${batteryStatusOutput}"
 }
 
-# getPowerStatus() {{{1
+# FUNCTION getPowerStatus() {{{1
 function getPowerStatus() {
   local batteryStatus=""
   if [ "$( cat /sys/class/power_supply/AC/online )" -eq "1" ]; then
@@ -91,7 +91,7 @@ function getPowerStatus() {
   echo "${batteryStatus}"
 }
 
-# getBattteryNumber() {{{1
+# FUNCTION getBattteryNumber() {{{1
 # count the number of battery in the system
 function getBatteryNumber() {
   declare -a aBattery
@@ -103,7 +103,7 @@ function getBatteryNumber() {
   echo "${iBatteryNumber}"
 }
 
-# getBatteryInUse() {{{1
+# FUNCTION getBatteryInUse() {{{1
 # Retrun the name of the draining/charging battery
 function getBatteryInUse() {
   local sBatInUse=""
@@ -121,7 +121,7 @@ function getBatteryInUse() {
   echo "${sBatInUse}"
 }
 
-# getBatteryTimeEmpty() {{{1
+# FUNCTION getBatteryTimeEmpty() {{{1
 # Return time remaining (in hour) for a given battery
 # 1 parm is active bat name
 # 2 parm (optional) return all available bat
@@ -156,6 +156,7 @@ function getBatteryTimeEmpty() {
   echo ${iRemainingTime}
 }
 
+# FUNCTION getAllBatteryTimeEmpty() {{{1
 # This function return the time to drain all battery,
 # useful for multi battery system
 function getAllBatteryTimeEmpty() {
@@ -166,7 +167,7 @@ function getAllBatteryTimeEmpty() {
   echo "${iRemainingTime}"
 }
 
-# getBatteryTimeFull() {{{1
+# FUNCTION getBatteryTimeFull() {{{1
 # Return time remaining (in hour) for a given battery
 function getBatteryTimeFull() {
   # we need the battery name
@@ -200,6 +201,7 @@ function getBatteryTimeFull() {
   echo ${iRemainingTime}
 }
 
+# FUNCTION getAllBatteryTimeEmpty() {{{1
 # This function return the time to charge all battery,
 # useful for multi battery system
 function getAllBatteryTimeFull() {
@@ -210,7 +212,7 @@ function getAllBatteryTimeFull() {
   echo "${iRemainingTime}"
 }
 
-# getCpuTemp() {{{1
+# FUNCTION getCpuTemp() {{{1
 function getCpuTemp() {
   local temp=''
   temp=$(acpi -t)
@@ -271,7 +273,7 @@ do
     esac
 done
 
-# main() {{{1
+# FUNCTION main() {{{1
 # generate toolbar
 function main() {
   # echo ">>>> Checking dependencies"
