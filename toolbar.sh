@@ -9,9 +9,11 @@
 # ---------------------------------------------
 
 # TaskList {{{1
+# @TODO: Add getOpts parm to configure the output
+# @TODO: Refactor the DWM status construction into a function
+# @TODO: Extract separator to a parm with default value to |
 # @TODO: When full charged change the output AC
 # @TODO: When BAT charging is less than 1H switch display to minute
-# @TODO: Export the volume to a specific function
 # @TODO: Refactor Network change wifi / ether as available
 # @TODO: Display AP name in WIFI module
 # @TODO: Add WIFI dbm if connected on a hotspot
@@ -238,6 +240,20 @@ function checkDependencies()
   fi
 }
 
+# FUNCTION getVolume() {{{1
+function getVolume() {
+  # Volume Level
+  local volume=''
+  local volumeOutput=''
+  volume="$( pacmd list-sinks | grep "volume" | head -n1 | cut -d: -f3 | cut -d% -f1 | tr -d "[:space:]" | cut -d/ -f2 )";
+  if [[ -n "${volume}" && "${volume}" != '' ]]; then
+    volumeOutput="SND ${volume} %"
+  else
+    volumeOutput=''
+  fi
+  echo "${volumeOutput}"
+}
+
 # GETOPTS {{{1
 # Get the param of the script.
 while getopts ":h" OPTION
@@ -293,14 +309,14 @@ function main() {
   batteryWidget="$batteryInUse/$batteryNumber $powerStatus $batteryTimeOutput"
 
   # Volume Level
-  DWM_VOL=$( pacmd list-sinks | grep "volume" | head -n1 | cut -d: -f3 | cut -d% -f1 | tr -d "[:space:]" | cut -d/ -f2 )" %";
+  DWM_VOL="$(getVolume)";
 
   # Date and Time
   DWM_DATE=$( date '+%Y-%m-%d %a' );
   DWM_CLOCK=$( date '+%k:%M' );
   CPU_USAGE=$(top -b -n2 -p 1 | fgrep "Cpu(s)" | tail -1 | awk -F'id,' -v prefix="$prefix" '{ split($1, vs, ","); v=vs[length(vs)]; sub("%", "", v); printf "%s%.1f %%\n", prefix, 100 - v }')
   # Overall output command
-  DWM_STATUS="CPU $CPU_USAGE @ $cpuTemp | $batteryWidget | Vol $DWM_VOL | $DWM_DATE | $DWM_CLOCK";
+  DWM_STATUS="CPU $CPU_USAGE @ $cpuTemp | $batteryWidget | $DWM_VOL | $DWM_DATE | $DWM_CLOCK";
   echo "$DWM_STATUS"
 }
 main
