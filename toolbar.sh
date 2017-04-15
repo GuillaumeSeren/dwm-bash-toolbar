@@ -9,9 +9,11 @@
 # ---------------------------------------------
 
 # TaskList {{{1
+# @TODO: Add getOpts parm to configure the output
+# @TODO: Refactor the DWM status construction into a function
+# @TODO: Extract separator to a parm with default value to |
 # @TODO: When full charged change the output AC
 # @TODO: When BAT charging is less than 1H switch display to minute
-# @TODO: Export the volume to a specific function
 # @TODO: Refactor Network change wifi / ether as available
 # @TODO: Display AP name in WIFI module
 # @TODO: Add WIFI dbm if connected on a hotspot
@@ -46,7 +48,7 @@ Sample:
 DOC
 }
 
-# getBatteryStatus() {{{1
+# FUNCTION getBatteryStatus() {{{1
 # $1 BAT_NUM if null return 'worst' state
 function getBatteryStatus() {
   local batteryStatus=""
@@ -66,7 +68,7 @@ function getBatteryStatus() {
   echo "${batteryStatus}"
 }
 
-# getBatteryStatusCharging
+# FUNCTION getBatteryStatusCharging
 function getBatteryStatusCharging() {
   local batteryStatusOutput=''
   local batteryStatus=''
@@ -78,7 +80,7 @@ function getBatteryStatusCharging() {
   echo "${batteryStatusOutput}"
 }
 
-# getPowerStatus() {{{1
+# FUNCTION getPowerStatus() {{{1
 function getPowerStatus() {
   local batteryStatus=""
   if [ "$( cat /sys/class/power_supply/AC/online )" -eq "1" ]; then
@@ -89,7 +91,7 @@ function getPowerStatus() {
   echo "${batteryStatus}"
 }
 
-# getBattteryNumber() {{{1
+# FUNCTION getBattteryNumber() {{{1
 # count the number of battery in the system
 function getBatteryNumber() {
   declare -a aBattery
@@ -101,7 +103,7 @@ function getBatteryNumber() {
   echo "${iBatteryNumber}"
 }
 
-# getBatteryInUse() {{{1
+# FUNCTION getBatteryInUse() {{{1
 # Retrun the name of the draining/charging battery
 function getBatteryInUse() {
   local sBatInUse=""
@@ -119,7 +121,7 @@ function getBatteryInUse() {
   echo "${sBatInUse}"
 }
 
-# getBatteryTimeEmpty() {{{1
+# FUNCTION getBatteryTimeEmpty() {{{1
 # Return time remaining (in hour) for a given battery
 # 1 parm is active bat name
 # 2 parm (optional) return all available bat
@@ -154,6 +156,7 @@ function getBatteryTimeEmpty() {
   echo ${iRemainingTime}
 }
 
+# FUNCTION getAllBatteryTimeEmpty() {{{1
 # This function return the time to drain all battery,
 # useful for multi battery system
 function getAllBatteryTimeEmpty() {
@@ -164,7 +167,7 @@ function getAllBatteryTimeEmpty() {
   echo "${iRemainingTime}"
 }
 
-# getBatteryTimeFull() {{{1
+# FUNCTION getBatteryTimeFull() {{{1
 # Return time remaining (in hour) for a given battery
 function getBatteryTimeFull() {
   # we need the battery name
@@ -198,6 +201,7 @@ function getBatteryTimeFull() {
   echo ${iRemainingTime}
 }
 
+# FUNCTION getAllBatteryTimeEmpty() {{{1
 # This function return the time to charge all battery,
 # useful for multi battery system
 function getAllBatteryTimeFull() {
@@ -208,7 +212,7 @@ function getAllBatteryTimeFull() {
   echo "${iRemainingTime}"
 }
 
-# getCpuTemp() {{{1
+# FUNCTION getCpuTemp() {{{1
 function getCpuTemp() {
   local temp=''
   temp=$(acpi -t)
@@ -238,6 +242,20 @@ function checkDependencies()
   fi
 }
 
+# FUNCTION getVolume() {{{1
+function getVolume() {
+  # Volume Level
+  local volume=''
+  local volumeOutput=''
+  volume="$( pacmd list-sinks | grep "volume" | head -n1 | cut -d: -f3 | cut -d% -f1 | tr -d "[:space:]" | cut -d/ -f2 )";
+  if [[ -n "${volume}" && "${volume}" != '' ]]; then
+    volumeOutput="SND ${volume} %"
+  else
+    volumeOutput=''
+  fi
+  echo "${volumeOutput}"
+}
+
 # GETOPTS {{{1
 # Get the param of the script.
 while getopts ":h" OPTION
@@ -255,7 +273,7 @@ do
     esac
 done
 
-# main() {{{1
+# FUNCTION main() {{{1
 # generate toolbar
 function main() {
   # echo ">>>> Checking dependencies"
@@ -293,14 +311,14 @@ function main() {
   batteryWidget="$batteryInUse/$batteryNumber $powerStatus $batteryTimeOutput"
 
   # Volume Level
-  DWM_VOL=$( pacmd list-sinks | grep "volume" | head -n1 | cut -d: -f3 | cut -d% -f1 | tr -d "[:space:]" | cut -d/ -f2 )" %";
+  DWM_VOL="$(getVolume)";
 
   # Date and Time
   DWM_DATE=$( date '+%Y-%m-%d %a' );
   DWM_CLOCK=$( date '+%k:%M' );
   CPU_USAGE=$(top -b -n2 -p 1 | fgrep "Cpu(s)" | tail -1 | awk -F'id,' -v prefix="$prefix" '{ split($1, vs, ","); v=vs[length(vs)]; sub("%", "", v); printf "%s%.1f %%\n", prefix, 100 - v }')
   # Overall output command
-  DWM_STATUS="CPU $CPU_USAGE @ $cpuTemp | $batteryWidget | Vol $DWM_VOL | $DWM_DATE | $DWM_CLOCK";
+  DWM_STATUS="CPU $CPU_USAGE @ $cpuTemp | $batteryWidget | $DWM_VOL | $DWM_DATE | $DWM_CLOCK";
   echo "$DWM_STATUS"
 }
 main
