@@ -9,6 +9,9 @@
 # ---------------------------------------------
 
 # TaskList {{{1
+# @TODO: Change time counter to minute in charge if > 1h
+# @FIXME: Hide active BAT when full
+# @FIXME: Hide '+ h' if BAT charged up and unknown state
 # @TODO: Add getOpts parm to configure the output
 # @TODO: Refactor the DWM status construction into a function
 # @TODO: Extract separator to a parm with default value to |
@@ -289,7 +292,9 @@ function main() {
   # batteryStatus="$(getBatteryStatus)"
   batteryStatusCharging=$(getBatteryStatusCharging)
   batteryNumber="$(getBatteryNumber)"
+  # If batteryInUse is null hide
   batteryInUse="$(getBatteryInUse)"
+
   if [[ "${powerStatus}" == 'DC' ]]; then
     # We are in DC mode → timeToEmpty !
     batteryTime="$(getAllBatteryTimeEmpty "${batteryInUse}")"
@@ -302,13 +307,21 @@ function main() {
     # We should be in AC mode → timeToFull !
     batteryTime="$(getAllBatteryTimeFull "${batteryInUse}")"
     # We need battery state charging / Discharging / unknown
-    if [[ "${batteryTime}" == "0" && "${batteryStatusCharging}" != "Charging" && "${batteryStatusCharging}" != '' ]]; then
-      batteryTimeOutput="${batteryStatusCharging}"
-    else
+    # if [[ "${batteryTime}" == "0" && "${batteryStatusCharging}" != "Charging" && "${batteryStatusCharging}" == '' ]]; then
+    if [[ "${batteryStatusCharging}" == "Charging" ]]; then
       batteryTimeOutput="+${batteryTime} h"
+      # batteryTimeOutput="+${batteryStatusCharging} h"
+    else
+      batteryTimeOutput="${batteryStatusCharging}"
+      # batteryTimeOutput="+${batteryStatusCharging} h"
     fi
   fi
-  batteryWidget="$batteryInUse/$batteryNumber $powerStatus $batteryTimeOutput"
+  # batteryPack = batInUse/batteryNumer 
+  batteryPack=''
+  if [[ "${batteryInUse}" != '' ]]; then
+    batteryPack="$batteryInUse/$batteryNumber"
+  fi
+  batteryWidget="$batteryPack $powerStatus $batteryTimeOutput"
 
   # Volume Level
   DWM_VOL="$(getVolume)";
