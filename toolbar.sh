@@ -184,14 +184,14 @@ function getBatteryTimeFull() {
         aPowerFull=("${aPowerNow[@]}" "$(cat "$bat"/energy_full)")
       done < <(find /sys/class/power_supply/ -maxdepth 1 -mindepth 1 -name "BAT*" -type l -print0)
       for iPowerFull in "${aPowerFull[@]}" ; do
-        iBatPowerFull=$(($iBatPowerFull + $iPowerFull))
+        iBatPowerFull=$((iBatPowerFull + iPowerFull))
       done
       unset -v aPowerFull
       while IFS= read -d $'\0' -r bat ; do
         aChargeNow=("${aChargeNow[@]}" "$(cat "$bat"/energy_now)")
       done < <(find /sys/class/power_supply/ -maxdepth 1 -mindepth 1 -name "BAT*" -type l -print0)
       for iCharge in "${aChargeNow[@]}" ; do
-        iBatChargeNow=$(($iBatChargeNow + $iCharge))
+        iBatChargeNow=$((iBatChargeNow + iCharge))
       done
       unset -v aChargeNow
     else
