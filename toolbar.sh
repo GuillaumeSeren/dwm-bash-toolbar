@@ -9,14 +9,12 @@
 # ---------------------------------------------
 
 # TaskList {{{1
+# @TODO: Refactor CPU_USAGE to be something faster
 # @TODO: Change time counter to minute in charge if > 1h
-# @FIXME: Hide active BAT when full
-# @FIXME: Hide '+ h' if BAT charged up and unknown state
+# @TODO: When BAT charging is less than 1H switch display to minute
 # @TODO: Add getOpts parm to configure the output
 # @TODO: Refactor the DWM status construction into a function
 # @TODO: Extract separator to a parm with default value to |
-# @TODO: When full charged change the output AC
-# @TODO: When BAT charging is less than 1H switch display to minute
 # @TODO: Refactor Network change wifi / ether as available
 # @TODO: Display AP name in WIFI module
 # @TODO: Add WIFI dbm if connected on a hotspot
@@ -63,7 +61,7 @@ function getBatteryStatus() {
     done < <(find /sys/class/power_supply/ -maxdepth 1 -mindepth 1 -name "BAT*" -type l -print0)
     for sBat in "${aBattery[@]}" ; do
       sState=$(cat "${sBat}"/status)
-      if [[ "${sState}" == "Discharging" || "${sState}" == "Charging" || "${sState}" == "Unknown" ]]; then
+      if [[ "${sState}" == "Discharging" || "${sState}" == "Charging" ]]; then
         batteryStatus="${sState}"
       fi
     done
@@ -184,14 +182,14 @@ function getBatteryTimeFull() {
         aPowerFull=("${aPowerNow[@]}" "$(cat "$bat"/energy_full)")
       done < <(find /sys/class/power_supply/ -maxdepth 1 -mindepth 1 -name "BAT*" -type l -print0)
       for iPowerFull in "${aPowerFull[@]}" ; do
-        iBatPowerFull=$(($iBatPowerFull + $iPowerFull))
+        iBatPowerFull=$((iBatPowerFull + iPowerFull))
       done
       unset -v aPowerFull
       while IFS= read -d $'\0' -r bat ; do
         aChargeNow=("${aChargeNow[@]}" "$(cat "$bat"/energy_now)")
       done < <(find /sys/class/power_supply/ -maxdepth 1 -mindepth 1 -name "BAT*" -type l -print0)
       for iCharge in "${aChargeNow[@]}" ; do
-        iBatChargeNow=$(($iBatChargeNow + $iCharge))
+        iBatChargeNow=$((iBatChargeNow + iCharge))
       done
       unset -v aChargeNow
     else
@@ -287,22 +285,18 @@ function main() {
   # Power/Battery Status
   # Power is AC / DC of the machine
   powerStatus="$(getPowerStatus)"
-  # BatteryStatus is charging / Discharging / Unknown
+  # BatteryStatus is charging / Discharging
   # BatteryStatus should take a parm to get all bat or just a given one
-  # batteryStatus="$(getBatteryStatus)"
+  batteryStatusCharging=''
   batteryStatusCharging=$(getBatteryStatusCharging)
   batteryNumber="$(getBatteryNumber)"
-  # If batteryInUse is null hide
+  # In AC if batteryInUse is null hide batInfo
   batteryInUse="$(getBatteryInUse)"
 
   if [[ "${powerStatus}" == 'DC' ]]; then
     # We are in DC mode → timeToEmpty !
     batteryTime="$(getAllBatteryTimeEmpty "${batteryInUse}")"
-    if [[ "${batteryTime}" == "0" ]]; then
-      batteryTimeOutput="-${batteryTime} h"
-    else
-      batteryTimeOutput="-${batteryTime} h"
-    fi
+    batteryTimeOutput="-${batteryTime} h"
   else
     # We should be in AC mode → timeToFull !
     batteryTime="$(getAllBatteryTimeFull "${batteryInUse}")"
@@ -310,13 +304,10 @@ function main() {
     # if [[ "${batteryTime}" == "0" && "${batteryStatusCharging}" != "Charging" && "${batteryStatusCharging}" == '' ]]; then
     if [[ "${batteryStatusCharging}" == "Charging" ]]; then
       batteryTimeOutput="+${batteryTime} h"
-      # batteryTimeOutput="+${batteryStatusCharging} h"
     else
-      batteryTimeOutput="${batteryStatusCharging}"
-      # batteryTimeOutput="+${batteryStatusCharging} h"
+      batteryTimeOutput="$(batteryStatusCharging)"
     fi
   fi
-  # batteryPack = batInUse/batteryNumer 
   batteryPack=''
   if [[ "${batteryInUse}" != '' ]]; then
     batteryPack="$batteryInUse/$batteryNumber"
@@ -324,7 +315,7 @@ function main() {
   batteryWidget="$batteryPack $powerStatus $batteryTimeOutput"
 
   # Volume Level
-  DWM_VOL="$(getVolume)";
+  DWM_VOL="$(getVolume)"
 
   # Date and Time
   DWM_DATE=$( date '+%Y-%m-%d %a' );
