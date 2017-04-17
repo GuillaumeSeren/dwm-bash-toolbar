@@ -287,22 +287,18 @@ function main() {
   # Power/Battery Status
   # Power is AC / DC of the machine
   powerStatus="$(getPowerStatus)"
-  # BatteryStatus is charging / Discharging / Unknown
+  # BatteryStatus is charging / Discharging
   # BatteryStatus should take a parm to get all bat or just a given one
-  # batteryStatus="$(getBatteryStatus)"
+  batteryStatusCharging=''
   batteryStatusCharging=$(getBatteryStatusCharging)
   batteryNumber="$(getBatteryNumber)"
-  # If batteryInUse is null hide
+  # In AC if batteryInUse is null hide batInfo
   batteryInUse="$(getBatteryInUse)"
 
   if [[ "${powerStatus}" == 'DC' ]]; then
     # We are in DC mode → timeToEmpty !
     batteryTime="$(getAllBatteryTimeEmpty "${batteryInUse}")"
-    if [[ "${batteryTime}" == "0" ]]; then
-      batteryTimeOutput="-${batteryTime} h"
-    else
-      batteryTimeOutput="-${batteryTime} h"
-    fi
+    batteryTimeOutput="-${batteryTime} h"
   else
     # We should be in AC mode → timeToFull !
     batteryTime="$(getAllBatteryTimeFull "${batteryInUse}")"
@@ -310,13 +306,10 @@ function main() {
     # if [[ "${batteryTime}" == "0" && "${batteryStatusCharging}" != "Charging" && "${batteryStatusCharging}" == '' ]]; then
     if [[ "${batteryStatusCharging}" == "Charging" ]]; then
       batteryTimeOutput="+${batteryTime} h"
-      # batteryTimeOutput="+${batteryStatusCharging} h"
     else
-      batteryTimeOutput="${batteryStatusCharging}"
-      # batteryTimeOutput="+${batteryStatusCharging} h"
+      batteryTimeOutput="$(batteryStatusCharging)"
     fi
   fi
-  # batteryPack = batInUse/batteryNumer 
   batteryPack=''
   if [[ "${batteryInUse}" != '' ]]; then
     batteryPack="$batteryInUse/$batteryNumber"
@@ -324,7 +317,7 @@ function main() {
   batteryWidget="$batteryPack $powerStatus $batteryTimeOutput"
 
   # Volume Level
-  DWM_VOL="$(getVolume)";
+  DWM_VOL="$(getVolume)"
 
   # Date and Time
   DWM_DATE=$( date '+%Y-%m-%d %a' );
