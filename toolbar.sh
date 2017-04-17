@@ -63,7 +63,7 @@ function getBatteryStatus() {
     done < <(find /sys/class/power_supply/ -maxdepth 1 -mindepth 1 -name "BAT*" -type l -print0)
     for sBat in "${aBattery[@]}" ; do
       sState=$(cat "${sBat}"/status)
-      if [[ "${sState}" == "Discharging" || "${sState}" == "Charging" || "${sState}" == "Unknown" ]]; then
+      if [[ "${sState}" == "Discharging" || "${sState}" == "Charging" ]]; then
         batteryStatus="${sState}"
       fi
     done
