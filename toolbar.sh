@@ -305,7 +305,7 @@ function main() {
     if [[ "${batteryStatusCharging}" == "Charging" ]]; then
       batteryTimeOutput="+${batteryTime} h"
     else
-      batteryTimeOutput="$(batteryStatusCharging)"
+      batteryTimeOutput="${batteryStatusCharging}"
     fi
   fi
   batteryPack=''
