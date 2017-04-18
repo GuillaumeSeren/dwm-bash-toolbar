@@ -9,12 +9,11 @@
 # ---------------------------------------------
 
 # TaskList {{{1
-# @TODO: Refactor CPU_USAGE to be something faster
+# @TODO: Refactor CPU_USAGE to be something faster (based on /proc/stat)
 # @TODO: Change time counter to minute in charge if > 1h
 # @TODO: When BAT charging is less than 1H switch display to minute
 # @TODO: Add getOpts parm to configure the output
 # @TODO: Refactor the DWM status construction into a function
-# @TODO: Extract separator to a parm with default value to |
 # @TODO: Refactor Network change wifi / ether as available
 # @TODO: Display AP name in WIFI module
 # @TODO: Add WIFI dbm if connected on a hotspot
