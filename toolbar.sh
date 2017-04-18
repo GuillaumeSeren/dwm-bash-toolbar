@@ -9,12 +9,11 @@
 # ---------------------------------------------
 
 # TaskList {{{1
-# @TODO: Refactor CPU_USAGE to be something faster
+# @TODO: Refactor CPU_USAGE to be something faster (based on /proc/stat)
 # @TODO: Change time counter to minute in charge if > 1h
 # @TODO: When BAT charging is less than 1H switch display to minute
 # @TODO: Add getOpts parm to configure the output
 # @TODO: Refactor the DWM status construction into a function
-# @TODO: Extract separator to a parm with default value to |
 # @TODO: Refactor Network change wifi / ether as available
 # @TODO: Display AP name in WIFI module
 # @TODO: Add WIFI dbm if connected on a hotspot
@@ -28,6 +27,7 @@
 # Flags :
 # flagGetOpts=0
 dependencies='cat find'
+separator='|'
 
 # FUNCTION usage() {{{1
 # Return the helping message for the use.
@@ -305,7 +305,7 @@ function main() {
     if [[ "${batteryStatusCharging}" == "Charging" ]]; then
       batteryTimeOutput="+${batteryTime} h"
     else
-      batteryTimeOutput="$(batteryStatusCharging)"
+      batteryTimeOutput="${batteryStatusCharging}"
     fi
   fi
   batteryPack=''
@@ -322,7 +322,7 @@ function main() {
   DWM_CLOCK=$( date '+%k:%M' );
   CPU_USAGE=$(top -b -n2 -p 1 | fgrep "Cpu(s)" | tail -1 | awk -F'id,' -v prefix="$prefix" '{ split($1, vs, ","); v=vs[length(vs)]; sub("%", "", v); printf "%s%.1f %%\n", prefix, 100 - v }')
   # Overall output command
-  DWM_STATUS="CPU $CPU_USAGE @ $cpuTemp | $batteryWidget | $DWM_VOL | $DWM_DATE | $DWM_CLOCK";
+  DWM_STATUS="CPU $CPU_USAGE @ $cpuTemp ${separator} $batteryWidget ${separator} $DWM_VOL ${separator} $DWM_DATE ${separator} $DWM_CLOCK";
   echo "$DWM_STATUS"
 }
 main
