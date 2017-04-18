@@ -28,6 +28,7 @@
 # Flags :
 # flagGetOpts=0
 dependencies='cat find'
+separator='|'
 
 # FUNCTION usage() {{{1
 # Return the helping message for the use.
@@ -322,7 +323,7 @@ function main() {
   DWM_CLOCK=$( date '+%k:%M' );
   CPU_USAGE=$(top -b -n2 -p 1 | fgrep "Cpu(s)" | tail -1 | awk -F'id,' -v prefix="$prefix" '{ split($1, vs, ","); v=vs[length(vs)]; sub("%", "", v); printf "%s%.1f %%\n", prefix, 100 - v }')
   # Overall output command
-  DWM_STATUS="CPU $CPU_USAGE @ $cpuTemp | $batteryWidget | $DWM_VOL | $DWM_DATE | $DWM_CLOCK";
+  DWM_STATUS="CPU $CPU_USAGE @ $cpuTemp ${separator} $batteryWidget ${separator} $DWM_VOL ${separator} $DWM_DATE ${separator} $DWM_CLOCK";
   echo "$DWM_STATUS"
 }
 main
