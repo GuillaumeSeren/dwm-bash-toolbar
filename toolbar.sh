@@ -320,7 +320,8 @@ function main() {
   # Date and Time
   DWM_DATE=$( date '+%Y-%m-%d %a' );
   DWM_CLOCK=$( date '+%k:%M' );
-  CPU_USAGE=$(top -b -n2 -p 1 | fgrep "Cpu(s)" | tail -1 | awk -F'id,' -v prefix="$prefix" '{ split($1, vs, ","); v=vs[length(vs)]; sub("%", "", v); printf "%s%.1f %%\n", prefix, 100 - v }')
+  # CPU_USAGE=$(top -b -n 1 -p 1 | fgrep "Cpu(s)" | tail -1 | awk -F'id,' -v prefix="$prefix" '{ split($1, vs, ","); v=vs[length(vs)]; sub("%", "", v); printf "%s%.1f %%\n", prefix, 100 - v }')
+  CPU_USAGE=$(grep 'cpu ' /proc/stat | awk '{usage=($2+$4)*100/($2+$4+$5)} END {print usage "%"}')
   # Overall output command
   DWM_STATUS="CPU $CPU_USAGE @ $cpuTemp ${separator} $batteryWidget ${separator} $DWM_VOL ${separator} $DWM_DATE ${separator} $DWM_CLOCK";
   echo "$DWM_STATUS"
