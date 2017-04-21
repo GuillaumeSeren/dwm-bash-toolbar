@@ -321,7 +321,13 @@ function main() {
   DWM_DATE=$( date '+%Y-%m-%d %a' );
   DWM_CLOCK=$( date '+%k:%M' );
   # CPU_USAGE=$(top -b -n 1 -p 1 | fgrep "Cpu(s)" | tail -1 | awk -F'id,' -v prefix="$prefix" '{ split($1, vs, ","); v=vs[length(vs)]; sub("%", "", v); printf "%s%.1f %%\n", prefix, 100 - v }')
-  CPU_USAGE=$(grep 'cpu ' /proc/stat | awk '{usage=($2+$4)*100/($2+$4+$5)} END {print usage "%"}')
+  # CPU_USAGE=$(grep 'cpu ' /proc/stat | awk '{usage=($2+$4)*100/($2+$4+$5)} END {print usage "%"}')
+  CPU_USAGE=$(grep 'cpu ' /proc/stat | awk '{usage=($2+$4)*100/($2+$3+$4+$5+$6+$7+$8)} END {print usage "%"}')
+  #      user    nice   system  idle      iowait irq   softirq  steal  guest  guest_nice
+  # cpu  74608   2520   24433   1117073   6176   4054  0        0      0      0
+  # cpu  676303  54969  1047936 3460684   117067 0     5952 		0 		 0 			0
+  # Test idle formula
+  # CPU_USAGE=$(grep 'cpu ' /proc/stat | awk '{usage=($6)*100/($2+$3+$4+$5+$6+$7+$8)} END {print usage "%"}')
   # Overall output command
   DWM_STATUS="CPU $CPU_USAGE @ $cpuTemp ${separator} $batteryWidget ${separator} $DWM_VOL ${separator} $DWM_DATE ${separator} $DWM_CLOCK";
   echo "$DWM_STATUS"
