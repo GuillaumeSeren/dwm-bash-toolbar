@@ -219,7 +219,7 @@ function getCpuTemp() {
   temp=$(acpi -t)
   local regex='^Thermal 0: ok, (.*)\.. degrees C$'
   [[ $temp =~ $regex ]]
-  echo "${BASH_REMATCH[1]} °C"
+  echo "${BASH_REMATCH[1]}°C"
 }
 
 # FUNCTION checkDependencies() {{{1
@@ -320,15 +320,16 @@ function main() {
   # Date and Time
   DWM_DATE=$( date '+%Y-%m-%d %a' );
   DWM_CLOCK=$( date '+%k:%M' );
-  # CPU_USAGE=$(top -b -n 1 -p 1 | fgrep "Cpu(s)" | tail -1 | awk -F'id,' -v prefix="$prefix" '{ split($1, vs, ","); v=vs[length(vs)]; sub("%", "", v); printf "%s%.1f %%\n", prefix, 100 - v }')
-  # CPU_USAGE=$(grep 'cpu ' /proc/stat | awk '{usage=($2+$4)*100/($2+$4+$5)} END {print usage "%"}')
-  CPU_USAGE=$(grep 'cpu ' /proc/stat | awk '{usage=(($2+$3+$4+$5+$6+$7+$8) - $5)*100/($2+$3+$4+$5+$6+$7+$8)} END {print usage "%"}' )
   #      user    nice   system  idle      iowait irq   softirq  steal  guest  guest_nice
   # cpu  74608   2520   24433   1117073   6176   4054  0        0      0      0
   # cpu  676303  54969  1047936 3460684   117067 0     5952 		0 		 0 			0
-  # Test idle formula
+  # CPU_USAGE=$(grep 'cpu ' /proc/stat | awk '{usage=($2+$3+$4)*100/($2+$3+$4+$5+$6+$7+$8+$9+$10+$11)} END {print usage "%"}' )
+  CORECOUNT=$(grep -c ^processor /proc/cpuinfo)
+  # Use top, skip the first 7 rows, count the sum of the values
+  #   in column 9 - the CPU column, do some simple rounding at the end
+  CPU_USAGE=$(top -bn 1 | awk -v n=$CORECOUNT 'NR > 7 { s += $9 } END { print int(s / n + .5); }')
 
-  DWM_STATUS="CPU $CPU_USAGE @ $cpuTemp ${separator} $batteryWidget ${separator} $DWM_VOL ${separator} $DWM_DATE ${separator} $DWM_CLOCK";
+  DWM_STATUS="CPU $CPU_USAGE% @ $cpuTemp ${separator} $batteryWidget ${separator} $DWM_VOL ${separator} $DWM_DATE ${separator} $DWM_CLOCK";
   echo "$DWM_STATUS"
 }
 main
