@@ -9,7 +9,7 @@
 # ---------------------------------------------
 
 # TaskList {{{1
-# @TODO: Refactor CPU_USAGE to be something faster (based on /proc/stat)
+# @TODO: Refactor CPU_USAGE using 2 /proc/stat check
 # @TODO: Change time counter to minute in charge if > 1h
 # @TODO: When BAT charging is less than 1H switch display to minute
 # @TODO: Add getOpts parm to configure the output
@@ -257,6 +257,19 @@ function getVolume() {
   echo "${volumeOutput}"
 }
 
+# FUNCTION getCpuUsage {{{1
+function getCpuUsage() {
+  #      user    nice   system  idle      iowait irq   softirq  steal  guest  guest_nice
+  # cpu  74608   2520   24433   1117073   6176   4054  0        0      0      0
+  # cpu  676303  54969  1047936 3460684   117067 0     5952 		0 		 0 			0
+  # CPU_USAGE=$(grep 'cpu ' /proc/stat | awk '{usage=($2+$3+$4)*100/($2+$3+$4+$5+$6+$7+$8+$9+$10+$11)} END {print usage "%"}' )
+  CORECOUNT=$(grep -c ^processor /proc/cpuinfo)
+  # Use top, skip the first 7 rows, count the sum of the values
+  #   in column 9 - the CPU column, do some simple rounding at the end
+  CPU_USAGE=$(top -bn 1 | awk -v n=$CORECOUNT 'NR > 7 { s += $9 } END { print int(s / n + .5); }')
+  echo "$CPU_USAGE%"
+}
+
 # GETOPTS {{{1
 # Get the param of the script.
 while getopts ":h" OPTION
@@ -320,16 +333,9 @@ function main() {
   # Date and Time
   DWM_DATE=$( date '+%Y-%m-%d %a' );
   DWM_CLOCK=$( date '+%k:%M' );
-  #      user    nice   system  idle      iowait irq   softirq  steal  guest  guest_nice
-  # cpu  74608   2520   24433   1117073   6176   4054  0        0      0      0
-  # cpu  676303  54969  1047936 3460684   117067 0     5952 		0 		 0 			0
-  # CPU_USAGE=$(grep 'cpu ' /proc/stat | awk '{usage=($2+$3+$4)*100/($2+$3+$4+$5+$6+$7+$8+$9+$10+$11)} END {print usage "%"}' )
-  CORECOUNT=$(grep -c ^processor /proc/cpuinfo)
-  # Use top, skip the first 7 rows, count the sum of the values
-  #   in column 9 - the CPU column, do some simple rounding at the end
-  CPU_USAGE=$(top -bn 1 | awk -v n=$CORECOUNT 'NR > 7 { s += $9 } END { print int(s / n + .5); }')
+  CPU_USAGE=$(getCpuUsage)
 
-  DWM_STATUS="CPU $CPU_USAGE% @ $cpuTemp ${separator} $batteryWidget ${separator} $DWM_VOL ${separator} $DWM_DATE ${separator} $DWM_CLOCK";
+  DWM_STATUS="CPU $CPU_USAGE @ $cpuTemp ${separator} $batteryWidget ${separator} $DWM_VOL ${separator} $DWM_DATE ${separator} $DWM_CLOCK";
   echo "$DWM_STATUS"
 }
 main
