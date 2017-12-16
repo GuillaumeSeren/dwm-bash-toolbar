@@ -26,7 +26,7 @@
 # Default variables {{{1
 # Flags :
 # flagGetOpts=0
-dependencies='cat find'
+dependencies='cat find top awk grep head cut tr pacmd'
 separator='|'
 
 # FUNCTION usage() {{{1
