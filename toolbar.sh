@@ -11,7 +11,7 @@
 # TaskList {{{1
 # @TODO: Add notification when bat is below 1h
 # @TODO: Change time counter to minute in charge if > 1h
-# @TODO: Add color simple color support
+# @TODO: Add color simple color support, check xsetroot
 # @TODO: Refactor CPU_USAGE using 2 /proc/stat store old in var
 # @TODO: Add getOpts parm to configure the output
 # @TODO: Refactor the DWM status construction into a function
@@ -28,6 +28,15 @@
 # flagGetOpts=0
 dependencies='cat find top awk grep head cut tr pacmd'
 separator='|'
+# Colors
+colorRed=     $(tput setaf 1)
+colorGreen=   $(tput setaf 2)
+colorYellow=  $(tput setaf 3)
+colorBlue=    $(tput setaf 4)
+colorMagenta= $(tput setaf 5)
+colorCyan=    $(tput setaf 6)
+colorWhite=   $(tput setaf 7)
+colorReset=   $(tput sgr0)
 
 # FUNCTION usage() {{{1
 # Return the helping message for the use.
