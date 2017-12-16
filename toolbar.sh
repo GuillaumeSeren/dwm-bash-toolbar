@@ -9,7 +9,6 @@
 # ---------------------------------------------
 
 # TaskList {{{1
-# @TODO: Add notification when bat is below 1h
 # @TODO: Change time counter to minute in charge if > 1h
 # @TODO: Add color simple color support, check xsetroot
 # @TODO: Refactor CPU_USAGE using 2 /proc/stat store old in var
@@ -320,6 +319,10 @@ function main() {
   if [[ "${powerStatus}" == 'DC' ]]; then
     # We are in DC mode → timeToEmpty !
     batteryTime="$(getAllBatteryTimeEmpty "${batteryInUse}")"
+    if [[ "${batteryTime}" == "0" ]]; then
+      # Send a notification if remaining time on bat is less 1H
+      notify-send -t 10 -u critical 'BAT' '→ BAT is less 1 H'
+    fi
     batteryTimeOutput="-${batteryTime} h"
   else
     # We should be in AC mode → timeToFull !
