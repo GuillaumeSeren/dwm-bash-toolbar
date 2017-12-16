@@ -29,14 +29,14 @@
 dependencies='cat find top awk grep head cut tr pacmd'
 separator='|'
 # Colors
-colorRed=     $(tput setaf 1)
-colorGreen=   $(tput setaf 2)
-colorYellow=  $(tput setaf 3)
-colorBlue=    $(tput setaf 4)
-colorMagenta= $(tput setaf 5)
-colorCyan=    $(tput setaf 6)
-colorWhite=   $(tput setaf 7)
-colorReset=   $(tput sgr0)
+colorRed=$(tput setaf 1)
+colorGreen=$(tput setaf 2)
+colorYellow=$(tput setaf 3)
+colorBlue=$(tput setaf 4)
+colorMagenta=$(tput setaf 5)
+colorCyan=$(tput setaf 6)
+colorWhite=$(tput setaf 7)
+colorReset=$(tput sgr0)
 
 # FUNCTION usage() {{{1
 # Return the helping message for the use.
