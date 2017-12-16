@@ -9,15 +9,14 @@
 # ---------------------------------------------
 
 # TaskList {{{1
-# @TODO: Refactor CPU_USAGE using 2 /proc/stat check
 # @TODO: Change time counter to minute in charge if > 1h
-# @TODO: When BAT charging is less than 1H switch display to minute
+# @TODO: Add color simple color support, check xsetroot
+# @TODO: Refactor CPU_USAGE using 2 /proc/stat store old in var
 # @TODO: Add getOpts parm to configure the output
 # @TODO: Refactor the DWM status construction into a function
 # @TODO: Refactor Network change wifi / ether as available
 # @TODO: Display AP name in WIFI module
 # @TODO: Add WIFI dbm if connected on a hotspot
-# @TODO: Add color simple color support
 
 # Error Codes {{{1
 # 0 - Ok
@@ -26,8 +25,17 @@
 # Default variables {{{1
 # Flags :
 # flagGetOpts=0
-dependencies='cat find'
+dependencies='cat find top awk grep head cut tr pacmd'
 separator='|'
+# Colors
+colorRed=$(tput setaf 1)
+colorGreen=$(tput setaf 2)
+colorYellow=$(tput setaf 3)
+colorBlue=$(tput setaf 4)
+colorMagenta=$(tput setaf 5)
+colorCyan=$(tput setaf 6)
+colorWhite=$(tput setaf 7)
+colorReset=$(tput sgr0)
 
 # FUNCTION usage() {{{1
 # Return the helping message for the use.
@@ -248,6 +256,7 @@ function getVolume() {
   # Volume Level
   local volume=''
   local volumeOutput=''
+  #@TODO: Check if output is empty
   volume="$( pacmd list-sinks | grep "volume" | head -n1 | cut -d: -f3 | cut -d% -f1 | tr -d "[:space:]" | cut -d/ -f2 )";
   if [[ -n "${volume}" && "${volume}" != '' ]]; then
     volumeOutput="SND ${volume} %"
@@ -259,6 +268,7 @@ function getVolume() {
 
 # FUNCTION getCpuUsage {{{1
 function getCpuUsage() {
+  # see https://github.com/Leo-G/DevopsWiki/wiki/How-Linux-CPU-Usage-Time-and-Percentage-is-calculated
   #      user    nice   system  idle      iowait irq   softirq  steal  guest  guest_nice
   # cpu  74608   2520   24433   1117073   6176   4054  0        0      0      0
   # cpu  676303  54969  1047936 3460684   117067 0     5952 		0 		 0 			0
@@ -309,6 +319,10 @@ function main() {
   if [[ "${powerStatus}" == 'DC' ]]; then
     # We are in DC mode → timeToEmpty !
     batteryTime="$(getAllBatteryTimeEmpty "${batteryInUse}")"
+    if [[ "${batteryTime}" == "0" ]]; then
+      # Send a notification if remaining time on bat is less 1H
+      notify-send -t 10 -u critical 'BAT' '→ BAT is less 1 H'
+    fi
     batteryTimeOutput="-${batteryTime} h"
   else
     # We should be in AC mode → timeToFull !
