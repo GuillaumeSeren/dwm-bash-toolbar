@@ -257,6 +257,7 @@ function getVolume() {
   # Volume Level
   local volume=''
   local volumeOutput=''
+  #@TODO: Check if output is empty
   volume="$( pacmd list-sinks | grep "volume" | head -n1 | cut -d: -f3 | cut -d% -f1 | tr -d "[:space:]" | cut -d/ -f2 )";
   if [[ -n "${volume}" && "${volume}" != '' ]]; then
     volumeOutput="SND ${volume} %"
@@ -268,6 +269,7 @@ function getVolume() {
 
 # FUNCTION getCpuUsage {{{1
 function getCpuUsage() {
+  # see https://github.com/Leo-G/DevopsWiki/wiki/How-Linux-CPU-Usage-Time-and-Percentage-is-calculated
   #      user    nice   system  idle      iowait irq   softirq  steal  guest  guest_nice
   # cpu  74608   2520   24433   1117073   6176   4054  0        0      0      0
   # cpu  676303  54969  1047936 3460684   117067 0     5952 		0 		 0 			0
