@@ -9,15 +9,15 @@
 # ---------------------------------------------
 
 # TaskList {{{1
-# @TODO: Refactor CPU_USAGE using 2 /proc/stat check
+# @TODO: Add notification when bat is below 1h
 # @TODO: Change time counter to minute in charge if > 1h
-# @TODO: When BAT charging is less than 1H switch display to minute
+# @TODO: Add color simple color support
+# @TODO: Refactor CPU_USAGE using 2 /proc/stat store old in var
 # @TODO: Add getOpts parm to configure the output
 # @TODO: Refactor the DWM status construction into a function
 # @TODO: Refactor Network change wifi / ether as available
 # @TODO: Display AP name in WIFI module
 # @TODO: Add WIFI dbm if connected on a hotspot
-# @TODO: Add color simple color support
 
 # Error Codes {{{1
 # 0 - Ok
